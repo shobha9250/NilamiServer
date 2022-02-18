@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require('cors');
 const app = express();
-const port = process.env.PORT || 3000
+const port = process.env.PORT
+console.log(port)
 
 app.use(express.json());
 app.use(
@@ -12,11 +13,13 @@ app.use(
 
 //import the routes
 const userRoutes = require('./routes/user');
+const auctionRoutes = require('./routes/auction');
 
-app.use(cors({origin: true}));
+app.use(cors({ origin: true }));
 
 //use custom routes
 app.use(userRoutes);
+app.use("/auction", auctionRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "ok" });
