@@ -21,7 +21,7 @@ router.get('/feed', async function (req, res, next) {
 	try {
 		res.json(await displayFeed());
 	} catch (err) {
-		console.error(`Error while displayinf feed : `, err.message);
+		console.error(`Error while displaying feed : `, err.message);
 		next(err);
 	}
 });

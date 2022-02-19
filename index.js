@@ -18,7 +18,7 @@ const auctionRoutes = require('./routes/auction');
 app.use(cors({ origin: true }));
 
 //use custom routes
-app.use(userRoutes);
+app.use('/user', userRoutes);
 app.use('/auction', auctionRoutes);
 
 app.get('/', (req, res) => {

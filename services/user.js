@@ -30,14 +30,14 @@ async function signUp(req, res) {
 						error: err,
 					});
 				}
-        console.log('x' + results);
+				console.log('x' + results);
 				if (results.rows.length > 0) {
 					return res.status(409).json({
 						message: 'mail exists already',
 					});
 				} else {
 					let insertQuery = `INSERT INTO user_data(username, email, password, name, primary_number) values ('${body.username}', '${body.email}', ${hashedPassword}, '${body.name}', '${body.primary_number}')`;
-					await db.query(insertQuery);
+					// await db.query(insertQuery);
 					return res.status(501).json({
 						success: 1,
 						message: 'successfully signed up',
@@ -83,6 +83,22 @@ async function login(req, res) {
 	});
 }
 
+/* update user info api */
+
+/* get user details api */
+async function userDetails(user_id) {
+	let displayUser = `SELECT * FROM user_data WHERE user_id='${user_id}'`;
+	const rows = await db.query(displayUser);
+	const user = helper.emptyOrRows(rows);
+	return user;
+}
+
+/* get user registered auctions(upcoming, completed, ongoing) */
+
+/* user register auction */
+
+/* user unregister auction */
+
 /* sample api to get details of all users */
 async function getAllUsers() {
 	const rows = await db.query(
@@ -96,5 +112,6 @@ async function getAllUsers() {
 module.exports = {
 	signUp,
 	login,
+	userDetails,
 	getAllUsers,
 };
