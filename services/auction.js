@@ -39,9 +39,65 @@ async function modifyAuction(req) {
     await db.query(updateQuery)
 }
 
+/* Add a like to the auction given auction_id */
+async function updateLikes(auction_id) {
+    let updateQuery = `UPDATE auction SET n_likes= n_likes + 1 WHERE auction_id='${auction_id}'`
+    await db.query(updateQuery)
+}
+
+/* Get the list of auctions which comes under a particular category */
+async function categoryAuctionFilter(category) {
+    console.log(await db.query(`SELECT * FROM product`))
+    let filterQuery = `SELECT *
+                        FROM auction
+                        INNER JOIN product
+                        ON auction.product_id = product.product_id WHERE product.product_category = '${category}'`
+    const rows = await db.query(filterQuery);
+    const displayFilteredAuctions = helper.emptyOrRows(rows);
+    return displayFilteredAuctions;
+}
+
+/* Get the list of auctions with given location */
+async function categoryAuctionFilter(category) {
+    let filterQuery = `SELECT *
+                        FROM auction
+                        INNER JOIN product
+                        ON auction.product_id = product.product_id WHERE product.product_category = '${category}'`
+    const rows = await db.query(filterQuery);
+    const displayFilteredAuctions = helper.emptyOrRows(rows);
+    return displayFilteredAuctions;
+}
+
+/* Get the list of auctions with given location */
+async function locationAuctionFilter(location) {
+    let filterQuery = `SELECT *
+                        FROM auction
+                        INNER JOIN user_address
+                        ON auction.auctioneer_id = user_address.user_id WHERE user_address.city = '${location}'`
+    const rows = await db.query(filterQuery);
+    const displayFilteredAuctions = helper.emptyOrRows(rows);
+    return displayFilteredAuctions;
+}
+
+/* Get the list of auctions with given location */
+async function sortedAuctionFilter() {
+    console.log(await db.query(`SELECT * FROM product`))
+    let filterQuery = `SELECT *
+                        FROM auction
+                        INNER JOIN product
+                        ON auction.product_id = product.product_id ORDER BY product.estimated_price`
+    const rows = await db.query(filterQuery);
+    const displaySortedAuctions = helper.emptyOrRows(rows);
+    return displaySortedAuctions;
+}
+
 module.exports = {
     addAuction,
     displayFeed,
     displayAuction,
-    modifyAuction
+    modifyAuction,
+    updateLikes,
+    categoryAuctionFilter,
+    locationAuctionFilter,
+    sortedAuctionFilter
 };
