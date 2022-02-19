@@ -1,10 +1,10 @@
 function emptyOrRows(rows) {
-    if (!rows) {
-      return [];
-    }
-    return rows;
-  }
-  
-  module.exports = {
-    emptyOrRows
-  }
+	if (!rows) {
+		return [];
+	}
+	return rows;
+}
+
+module.exports = {
+	emptyOrRows,
+};
