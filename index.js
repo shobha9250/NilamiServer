@@ -1,6 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
+const cookies = require('cookie-parser');
 const app = express();
 const port = process.env.PORT;
 console.log(port);
@@ -11,6 +12,7 @@ app.use(
 		extended: true,
 	})
 );
+app.use(cookies());
 
 //import the routes
 const userRoutes = require('./routes/user');
@@ -23,6 +25,8 @@ app.use('/user', userRoutes);
 app.use('/auction', auctionRoutes);
 
 app.get('/', (req, res) => {
+	token = req.cookies['token'];
+	console.log(req.user);
 	res.json({ message: 'ok' });
 });
 
