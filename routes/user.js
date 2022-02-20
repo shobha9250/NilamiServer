@@ -33,8 +33,8 @@ router.post('/login', async function (req, res, next) {
 	}
 });
 
-router.get('/:username', verifyToken, async function (req, res, next) {
-	console.log('User details with username ' + req.user.username);
+router.get('/:user_name', verifyToken, async function (req, res, next) {
+	console.log('User details with username ' + req.user.user_name);
 	try {
 		res.json(await userDetails(req.user.username));
 		console.log(req.user);
@@ -44,34 +44,40 @@ router.get('/:username', verifyToken, async function (req, res, next) {
 	}
 });
 
-router.put('/editUser/:username', verifyToken, async function (req, res, next) {
-	console.log('Modify details for user ' + req.user.username);
-	try {
-		res.json(await updateUserInfo(req.user.username));
-	} catch (err) {
-		console.error(`Error while modifying user : `, err.message);
-		next(err);
+router.put(
+	'/editUser/:user_name',
+	verifyToken,
+	async function (req, res, next) {
+		console.log('Modify details for user ' + req.user.user_name);
+		try {
+			res.json(await updateUserInfo(req.user.user_name));
+		} catch (err) {
+			console.error(`Error while modifying user : `, err.message);
+			next(err);
+		}
 	}
-});
+);
 
 router.post('/register/auction/:auction_id', verifyToken, async function (req, res, next) {
-	console.log('Register for auction ' + req.auction_id);
-	try {
-		await registerForAuction(req.user.user_id, req.auction_id);
-	} catch (err) {
-		console.error(`Error while registering : `, err.message);
-		next(err);
+		console.log('Register for auction ' + req.auction_id);
+		try {
+			await registerForAuction(req.user.user_id, req.auction_id);
+		} catch (err) {
+			console.error(`Error while registering : `, err.message);
+			next(err);
+		}
 	}
-});
+);
 
 router.post('/unregister/auction/:auction_id', verifyToken, async function (req, res, next) {
-	console.log('Register for auction ' + req.auction_id);
-	try {
-		await unregisterForAuction(req.user.user_id, req.auction_id);
-	} catch (err) {
-		console.error(`Error while unregistering : `, err.message);
-		next(err);
+		console.log('Register for auction ' + req.auction_id);
+		try {
+			await unregisterForAuction(req.user.user_id, req.auction_id);
+		} catch (err) {
+			console.error(`Error while unregistering : `, err.message);
+			next(err);
+		}
 	}
-});
+);
 
 module.exports = router;

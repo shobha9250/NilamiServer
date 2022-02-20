@@ -95,15 +95,15 @@ async function login(req, res) {
 }
 
 /* update user info api */
-async function updateUserInfo(username) {
+async function updateUserInfo(user_name) {
 	let rq = req.query;
-	let updateQuery = `UPDATE user_data WHERE user_name='${username}' SET username='${rq.username}', email='${rq.email}', name='${rq.name}', primary_number='${rq.primary_number}', profile_picture='${rq.profile_picture}'`;
+	let updateQuery = `UPDATE user_data WHERE user_name='${user_name}' SET username='${rq.user_name}', email='${rq.email}', name='${rq.name}', primary_number='${rq.primary_number}', profile_picture='${rq.profile_picture}'`;
 	await db.query(updateQuery);
 }
 
 /* get user details api */
-async function userDetails(username) {
-	let displayUser = `SELECT * FROM user_data WHERE user_name='${username}'`;
+async function userDetails(user_name) {
+	let displayUser = `SELECT * FROM user_data WHERE user_name='${user_name}'`;
 	const rows = await db.query(displayUser);
 	const user = helper.emptyOrRows(rows);
 	console.log('User page');
