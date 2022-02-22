@@ -1,3 +1,5 @@
+/* make api for bidding*/
+
 const db = require('./db');
 const helper = require('../helper');
 const bcrypt = require('bcrypt');

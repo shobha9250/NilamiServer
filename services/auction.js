@@ -60,10 +60,10 @@ async function displayFeed() {
 		const displayFeed = helper.emptyOrRows(rows);
 		return displayFeed;
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 
@@ -78,10 +78,10 @@ async function displayAuction(auction_id) {
 		const auction = helper.emptyOrRows(rows);
 		return auction;
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 
@@ -101,15 +101,15 @@ async function modifyAuction(req) {
 						SET is_private='${req.body.is_private}',start_date='${req.body.start_date}',end_date='${req.body.end_date}',start_time='${req.body.start_time}',end_time='${req.body.end_time}'
 						WHERE auction_id='${auction_id}'`;
 		await db.query(updateQuery);
-		return res.status(501).json({
+		return {
 			success: 1,
 			message: 'updation successful',
-		});
+		};
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 
@@ -118,15 +118,15 @@ async function updateLikes(auction_id) {
 	try {
 		let updateQuery = `UPDATE auction SET n_likes= n_likes + 1 WHERE auction_id='${auction_id}'`;
 		await db.query(updateQuery);
-		return res.status(501).json({
+		return {
 			success: 1,
 			message: 'liked',
-		});
+		};
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 
@@ -142,10 +142,10 @@ async function categoryAuctionFilter(category) {
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 
@@ -160,10 +160,10 @@ async function categoryAuctionFilter(category) {
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 
@@ -178,10 +178,10 @@ async function locationAuctionFilter(location) {
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 
@@ -197,10 +197,10 @@ async function sortedAuctionFilter() {
 		const displaySortedAuctions = helper.emptyOrRows(rows);
 		return displaySortedAuctions;
 	} catch (error) {
-		return res.status(500).json({
+		return {
 			success: 0,
 			error: error,
-		});
+		};
 	}
 }
 

@@ -1,7 +1,8 @@
+const { verifyToken, verifyAuctioneer } = require("../middlewares/auth");
 const { addAuction, displayFeed, displayAuction, modifyAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter } = require("../services/auction");
 const router = require("express").Router();
 
-router.post('/new', async function (req, res, next) {
+router.post('/new',verifyToken, async function (req, res, next) {
 	console.log('Adding new auction details');
 	try {
 		await addAuction(req);
@@ -31,7 +32,7 @@ router.get('/id/:id', async function (req, res, next) {
 	}
 });
 
-router.put('/edit/:id', async function (req, res, next) {
+router.put('/edit/:id',verifyToken,verifyAuctioneer, async function (req, res, next) {
 	console.log('Modify details for auction with id ' + req.params.id);
 	try {
 		res.json(await modifyAuction(req));
@@ -41,7 +42,7 @@ router.put('/edit/:id', async function (req, res, next) {
 	}
 });
 
-router.put('/add_like/:id', async function (req, res, next) {
+router.put('/add_like/:id',verifyToken, async function (req, res, next) {
     console.log('Add a like for auction with id ' + req.params.id)
     try {
         res.json(await updateLikes(req.params.id));
