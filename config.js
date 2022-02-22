@@ -7,6 +7,7 @@ const config = {
       password: process.env.DATABASE_PASSWORD,
       port: process.env.DATABASE_PORT,
       database:process.env.DATABASE,
+      multipleStatements:true,
     },
     jwt: {
       secret: process.env.JWT_SECRET,

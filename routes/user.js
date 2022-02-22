@@ -1,15 +1,24 @@
 const {
 	signUp,
 	login,
-	userDetails,
+	getUserDetails,
 	updateUserInfo,
 	registerForAuction,
 	unregisterForAuction,
+	addUserAddress,
+	deleteUserAddress,
+	getRegisteredAuctions
 } = require('../services/user');
 const router = require('express').Router();
 const { verifyToken } = require('../middlewares/auth');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+
+
+//@type      POST
+//@route     /user/signup
+//@desc      route for signing up
+//@access    PUBLIC
 
 router.post('/signup', async function (req, res, next) {
 	console.log('Sign up');
@@ -23,6 +32,11 @@ router.post('/signup', async function (req, res, next) {
 	}
 });
 
+//@type      POST
+//@route     /user/login
+//@desc      route for login
+//@access    PUBLIC
+
 router.post('/login', async function (req, res, next) {
 	console.log('Login');
 	try {
@@ -33,35 +47,89 @@ router.post('/login', async function (req, res, next) {
 	}
 });
 
-router.get('/:user_name', verifyToken, async function (req, res, next) {
-	console.log('User details with username ' + req.user.user_name);
+//@type      GET
+//@route     /user/profile
+//@desc      route for showing user details
+//@access    PRIVATE
+
+router.get('/profile', verifyToken, async function (req, res, next) {
+	console.log('User details with username ' + req.user.username);
 	try {
-		res.json(await userDetails(req.user.username));
-		console.log(req.user);
+		await getUserDetails(req,res);
 	} catch (err) {
 		console.error(`Error while displaying user : `, err.message);
 		next(err);
 	}
 });
 
-router.put(
-	'/editUser/:user_name',
-	verifyToken,
-	async function (req, res, next) {
-		console.log('Modify details for user ' + req.user.user_name);
-		try {
-			res.json(await updateUserInfo(req.user.user_name));
-		} catch (err) {
-			console.error(`Error while modifying user : `, err.message);
-			next(err);
-		}
-	}
-);
+//@type      GET
+//@route     /user/registeredAuctions
+//@desc      route for showing user details
+//@access    PRIVATE
 
-router.post('/register/auction/:auction_id', verifyToken, async function (req, res, next) {
-		console.log('Register for auction ' + req.auction_id);
+router.get('/registeredAuctions', verifyToken, async function (req, res, next) {
+	try {
+		await getRegisteredAuctions(req,res);
+	} catch (err) {
+		console.error(`Error while displaying registered auctions : `, err.message);
+		next(err);
+	}
+});
+
+//@type      PUT
+//@route     /user/updateInfo
+//@desc      route for updating basic user info
+//@access    PRIVATE
+
+router.put('/updateInfo',verifyToken,async function (req, res, next) {
+	console.log('Modify details for user ' + req.user.username);
+	try {
+		await updateUserInfo(req,res);
+	} catch (err) {
+		console.error(`Error while modifying user : `, err.message);
+		next(err);
+	}
+});
+
+//@type      POST
+//@route     /user/addAddress
+//@desc      route for adding a new address to profile
+//@access    PRIVATE
+
+router.post('/addAddress',verifyToken,async function (req, res, next) {
+	console.log('Modify details for user ' + req.user.username);
+	try {
+		await addUserAddress(req,res);
+	} catch (err) {
+		console.error(`Error while adding address : `, err.message);
+		next(err);
+	}
+});
+
+//@type      POST
+//@route     /user/deleteAddress
+//@desc      route for deleting an existing address from profile
+//@access    PRIVATE
+
+router.post('/deleteAddress',verifyToken,async function (req, res, next) {
+	console.log('Modify details for user ' + req.user.username);
+	try {
+		await deleteUserAddress(req,res);
+	} catch (err) {
+		console.error(`Error while adding address : `, err.message);
+		next(err);
+	}
+});
+
+//@type      POST
+//@route     /user/register/auction
+//@desc      route for registering to a auction
+//@access    PRIVATE
+
+router.post('/register/auction', verifyToken, async function (req, res, next) {
+		console.log('Register for auction ' + req.body.auction_id);
 		try {
-			await registerForAuction(req.user.user_id, req.auction_id);
+			await registerForAuction(req,res);
 		} catch (err) {
 			console.error(`Error while registering : `, err.message);
 			next(err);
@@ -69,10 +137,15 @@ router.post('/register/auction/:auction_id', verifyToken, async function (req, r
 	}
 );
 
-router.post('/unregister/auction/:auction_id', verifyToken, async function (req, res, next) {
-		console.log('Register for auction ' + req.auction_id);
+//@type      POST
+//@route     /user/unregister/auction
+//@desc      route for unregistering from an event
+//@access    PRIVATE
+
+router.post('/unregister/auction', verifyToken, async function (req, res, next) {
+		console.log('Unregister for auction ' + req.body.auction_id);
 		try {
-			await unregisterForAuction(req.user.user_id, req.auction_id);
+			await unregisterForAuction(req,res);
 		} catch (err) {
 			console.error(`Error while unregistering : `, err.message);
 			next(err);
