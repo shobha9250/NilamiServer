@@ -77,28 +77,46 @@ async function login(req, res) {
 				error: "user with this email doesn't exist",
 			});
 		} else {
-			bcrypt
-				.compare(password, row[0].password)
-				.then((isCorrect) => {
-					if (isCorrect) {
-						const payload = {
-							user_id: row[0].user_id,
-							username: row[0].user_name,
-							email: row[0].email,
-						};
-						res.cookie(
-							'token',
-							jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
-						);
-						return res.status(501).json({
-							success: 1,
-							message: 'successfully signed up',
-						});
-					} else {
-						res.status(400).json({ passworderror: 'password is not correct' });
-					}
-				})
-				.catch((err) => console.log(err));
+
+			/*DO NOT REMOVE THIS CODE */
+
+			// bcrypt
+			// 	.compare(password, row[0].password)
+			// 	.then((isCorrect) => {
+			// 		if (isCorrect) {
+			// 			const payload = {
+			// 				user_id: row[0].user_id,
+			// 				username: row[0].user_name,
+			// 				email: row[0].email,
+			// 			};
+			// 			res.cookie(
+			// 				'token',
+			// 				jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
+			// 			);
+			// 			return res.status(501).json({
+			// 				success: 1,
+			// 				message: 'successfully signed up',
+			// 			});
+			// 		} else {
+			// 			res.status(400).json({ passworderror: 'password is not correct' });
+			// 		}
+			// 	})
+			// 	.catch((err) => console.log(err));
+			if(password == row[0].password){
+				const payload = {
+					user_id: row[0].user_id,
+					username: row[0].user_name,
+					email: row[0].email,
+				};
+				res.cookie(
+					'token',
+					jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
+				);
+				return res.status(501).json({
+					success: 1,
+					message: 'successfully signed up',
+				});
+			}
 		}
 	} catch (error) {
 		console.log(error);

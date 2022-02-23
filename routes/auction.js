@@ -1,11 +1,13 @@
 const { verifyToken, verifyAuctioneer } = require("../middlewares/auth");
 const { addAuction, displayFeed, displayAuction, modifyAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter } = require("../services/auction");
 const router = require("express").Router();
+const {inviteSuggestions} = require("../services/inviteSuggestion");
 
 router.post('/new',verifyToken, async function (req, res, next) {
 	console.log('Adding new auction details');
 	try {
-		await addAuction(req);
+		// await addAuction(req);
+        inviteSuggestions(req,res);
 	} catch (err) {
 		console.error(`Error while adding auction : `, err.message);
 		next(err);
