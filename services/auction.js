@@ -62,7 +62,7 @@ async function displayFeed() {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }
@@ -80,7 +80,7 @@ async function displayAuction(auction_id) {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }
@@ -108,7 +108,7 @@ async function modifyAuction(req) {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }
@@ -125,7 +125,7 @@ async function updateLikes(auction_id) {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }
@@ -144,7 +144,7 @@ async function categoryAuctionFilter(category) {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }
@@ -162,7 +162,7 @@ async function categoryAuctionFilter(category) {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }
@@ -180,7 +180,7 @@ async function locationAuctionFilter(location) {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }
@@ -199,7 +199,7 @@ async function sortedAuctionFilter() {
 	} catch (error) {
 		return {
 			success: 0,
-			error: error,
+			error: `${error}`,
 		};
 	}
 }

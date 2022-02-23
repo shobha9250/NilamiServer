@@ -37,8 +37,12 @@ async function signUp(req, res) {
 				username: inputData.username,
 				email: inputData.email,
 			};
-			let insertQuery = `INSERT INTO user_data(user_id,user_name, email, password, name, primary_mobile) values ('${inputData.user_id}','${inputData.username}', '${inputData.email}', '${inputData.password}', '${inputData.name}', '${inputData.primary_number}')`;
-			let addressQuery = `INSERT INTO user_address(address_id,user_id,address,city,pincode,mobile) VALUES('${inputData.address_id}','${inputData.user_id}','${inputData.address}','${inputData.city}','${inputData.pincode}','${inputData.mobile}')`;
+			let insertQuery = `INSERT INTO 
+								user_data(user_id,user_name, email, password, name, primary_mobile) 
+								VALUES ('${inputData.user_id}','${inputData.username}', '${inputData.email}', '${inputData.password}', '${inputData.name}', '${inputData.primary_number}')`;
+			let addressQuery = `INSERT INTO 
+								user_address(address_id,user_id,address,city,pincode,mobile) 
+								VALUES('${inputData.address_id}','${inputData.user_id}','${inputData.address}','${inputData.city}','${inputData.pincode}','${inputData.mobile}')`;
 			await db.query(insertQuery);
 			await db.query(addressQuery);
 			res.cookie(
@@ -53,6 +57,10 @@ async function signUp(req, res) {
 		} 
 	}catch (error) {
 		console.log(error);
+		return res.json({
+			success: 0,
+			message: `${error}`,
+		});
 	}
 }
 
@@ -94,6 +102,10 @@ async function login(req, res) {
 		}
 	} catch (error) {
 		console.log(error);
+		return res.json({
+			success: 0,
+			message: `${error}`,
+		});
 	}
 }
 
@@ -105,7 +117,12 @@ async function updateUserInfo(req,res) {
 		primary_mobile : req.body.primary_mobile,
 		profile_pic: req.body.profile_pic
 	};
-	let updateQuery = `UPDATE user_data SET email='${updatedData.email}', name='${updatedData.name}', primary_mobile='${updatedData.primary_mobile}', profile_pic='${updatedData.profile_pic}' WHERE user_name='${req.user.username}'`;
+	let updateQuery = `UPDATE user_data 
+						SET email='${updatedData.email}', 
+					    name='${updatedData.name}', 
+						primary_mobile='${updatedData.primary_mobile}', 
+						profile_pic='${updatedData.profile_pic}' 
+						WHERE user_name='${req.user.username}'`;
 	try {
 		await db.query(updateQuery);
 		return res.status(501).json({
@@ -116,7 +133,7 @@ async function updateUserInfo(req,res) {
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: error,
+			message: `${error}`,
 		});
 	}
 }
@@ -129,7 +146,9 @@ async function addUserAddress(req,res){
 		mobile: req.body.pincode,
 		address_id: uuidv4()
 	}
-	let addressQuery = `INSERT INTO user_address(address_id,user_id,address,city,pincode,mobile) VALUES('${newAddress.address_id}','${req.user.user_id}','${newAddress.address}','${newAddress.city}','${newAddress.pincode}','${newAddress.mobile}')`;
+	let addressQuery = `INSERT INTO 
+						user_address(address_id,user_id,address,city,pincode,mobile) 
+						VALUES('${newAddress.address_id}','${req.user.user_id}','${newAddress.address}','${newAddress.city}','${newAddress.pincode}','${newAddress.mobile}')`;
 	try {
 		await db.query(addressQuery);
 		return res.status(501).json({
@@ -140,7 +159,7 @@ async function addUserAddress(req,res){
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: error,
+			message: `${error}`,
 		});
 	}
 }
@@ -158,7 +177,7 @@ async function deleteUserAddress(req,res){
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: error,
+			message: `${error}`,
 		});
 	}
 }
@@ -182,7 +201,7 @@ async function getUserDetails(req,res) {
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: error,
+			message: `${error}`,
 		});
 	}
 }
@@ -201,7 +220,7 @@ async function getRegisteredAuctions(req,res) {
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: error,
+			message: `${error}`,
 		});
 	}
 }
@@ -221,7 +240,7 @@ async function registerForAuction(req,res) {
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: error,
+			message: `${error}`,
 		});
 	}
 }
@@ -241,10 +260,55 @@ async function unregisterForAuction(req,res) {
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: error,
+			message: `${error}`,
 		});
 	}
 }
+
+/* user bidding in an auction */
+async function bid(req,res) {
+	const auction_id = req.params.auction_id;
+	const bidValue = req.body.bidValue;
+	let getTopBids = `SELECT * FROM auction_bid_details WHERE auction_id='${auction_id}'`;
+	try {
+		let bidDetails = (await db.query(getTopBids))[0];
+		if(!bidDetails){
+			console.log("dd");
+			const insertBidQuery = `INSERT INTO auction_bid_details VALUES('${auction_id}','0','0','0')`;
+			await db.query(insertBidQuery);
+			bidDetails = (await db.query(getTopBids))[0];
+			console.log(bidDetails);
+		}
+		if(bidValue > bidDetails.highest_bid){
+			const updateBidQuery = `UPDATE auction_bid_details SET 
+									highest_bid='${bidValue}', 
+									second_highest_bid='${bidDetails.highest_bid}', 
+									third_highest_bid='${bidDetails.second_highest_bid}' 
+									WHERE auction_id ='${auction_id}'`;
+			const updateWinnerQuery =`UPDATE auction SET winner_user_id='${req.user.user_id}'`;
+
+			await db.query(updateBidQuery);
+			await db.query(updateWinnerQuery);
+			return res.status(200).json({
+				success: 1,
+				message : "successful bid"
+			});
+
+		}else{
+			return res.json({
+				success: 0,
+				message : "your bid is less than than the highest bid"
+			});
+		}
+	} catch (error) {
+		console.log(error);
+		return res.json({
+			success: 0,
+			message: `${error}`,
+		});
+	}
+}
+
 
 module.exports = {
 	signUp,
@@ -256,4 +320,5 @@ module.exports = {
 	addUserAddress,
 	deleteUserAddress,
 	getRegisteredAuctions,
+	bid
 };

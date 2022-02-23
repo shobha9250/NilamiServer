@@ -7,7 +7,8 @@ const {
 	unregisterForAuction,
 	addUserAddress,
 	deleteUserAddress,
-	getRegisteredAuctions
+	getRegisteredAuctions,
+	bid
 } = require('../services/user');
 const router = require('express').Router();
 const { verifyToken } = require('../middlewares/auth');
@@ -151,6 +152,22 @@ router.post('/unregister/auction', verifyToken, async function (req, res, next) 
 			next(err);
 		}
 	}
+);
+
+//@type      POST
+//@route     /user/bid/auction/:id
+//@desc      route for bidding
+//@access    PRIVATE
+
+router.post('/bid/auction/:auction_id', verifyToken, async function (req, res, next) {
+	console.log('Bid for auction ' + req.params.auction_id);
+	try {
+		await bid(req,res);
+	} catch (err) {
+		console.error(`Error while bidding : `, err.message);
+		next(err);
+	}
+}
 );
 
 module.exports = router;
