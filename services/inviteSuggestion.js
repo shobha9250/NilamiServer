@@ -27,24 +27,26 @@ class Queue{
 
 async function inviteSuggestions (req,res) {
     try {
-        const auctioneer_id = req.user.user_id;
+        const client_user_id = req.user.user_id;
         const category = "antique";
         var suggestedUsers = [];
         var queue = new Queue();
         const visited = new Map();
-        visited.set(auctioneer_id,true);
-        queue.enqueue(auctioneer_id);
+        visited.set(client_user_id,true);
+        queue.enqueue(client_user_id);
+
+        const winnerAndAuctioneerQuery = `SELECT auctioneer_id,winner_user_id 
+                                    FROM auction 
+                                    INNER JOIN product ON auction.product_id=product.product_id 
+                                    WHERE product_category='${category}'`;
+
+        const winnerAndAuctioneerArray = await db.query(winnerAndAuctioneerQuery);
+        
         while(!queue.isEmpty()){
             const user_id = queue.front();
-            const getWinnersQuery = `SELECT winner_user_id 
-                                      FROM auction 
-                                      INNER JOIN product ON auction.product_id=product.product_id 
-                                      WHERE product_category='${category}' AND auctioneer_id='${user_id}'`;
-            const winnerArray = await db.query(getWinnersQuery);
+            const winnerArray = winnerAndAuctioneerArray.filter(data => data.auctioneer_id == user_id);
             winnerArray.forEach(winner => {
-                console.log(winner.winner_user_id);
                 if(winner.winner_user_id && !visited.get(winner.winner_user_id)){
-                    console.log("sfsf");
                     queue.enqueue(winner.winner_user_id);
                     suggestedUsers.push(winner.winner_user_id);
                     visited.set(winner.winner_user_id,true);
@@ -52,7 +54,6 @@ async function inviteSuggestions (req,res) {
             });
             queue.dequeue();
         }
-        console.log(suggestedUsers);
         return res.json({
 			suggestedUsers
 		});
