@@ -242,6 +242,27 @@ async function getRegisteredAuctions(req,res) {
 		});
 	}
 }
+/* get user's orgainsed auctions */
+async function getMyAuctions(req,res) {
+	const user_id = req.user.user_id;
+	let getMyAuctionsQuery = `SELECT * 
+							FROM auction 
+							INNER JOIN product ON auction.product_id=product.product_id 
+							WHERE auctioneer_id='${user_id}'`;
+	try {
+		const myAuctions = await db.query(getMyAuctionsQuery);
+		return res.status(200).json({
+			success:1,
+			myAuctions: myAuctions
+		});
+	} catch (error) {
+		console.log(error);
+		return res.json({
+			success: 0,
+			message: `${error}`,
+		});
+	}
+}
 
 /* user register auction */
 async function registerForAuction(req,res) {
@@ -338,5 +359,6 @@ module.exports = {
 	addUserAddress,
 	deleteUserAddress,
 	getRegisteredAuctions,
-	bid
+	bid,
+	getMyAuctions
 };

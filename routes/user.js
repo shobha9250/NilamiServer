@@ -8,7 +8,8 @@ const {
 	addUserAddress,
 	deleteUserAddress,
 	getRegisteredAuctions,
-	bid
+	bid,
+	getMyAuctions
 } = require('../services/user');
 const router = require('express').Router();
 const { verifyToken } = require('../middlewares/auth');
@@ -65,7 +66,7 @@ router.get('/profile', verifyToken, async function (req, res, next) {
 
 //@type      GET
 //@route     /user/registeredAuctions
-//@desc      route for showing user details
+//@desc      route for showing user's registered auctions
 //@access    PRIVATE
 
 router.get('/registeredAuctions', verifyToken, async function (req, res, next) {
@@ -73,6 +74,20 @@ router.get('/registeredAuctions', verifyToken, async function (req, res, next) {
 		await getRegisteredAuctions(req,res);
 	} catch (err) {
 		console.error(`Error while displaying registered auctions : `, err.message);
+		next(err);
+	}
+});
+
+//@type      GET
+//@route     /user/myAuctions
+//@desc      route for showing auctions that user has organised
+//@access    PRIVATE
+
+router.get('/myAuctions', verifyToken, async function (req, res, next) {
+	try {
+		await getMyAuctions(req,res);
+	} catch (err) {
+		console.error(`Error while displaying auctions : `, err.message);
 		next(err);
 	}
 });
