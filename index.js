@@ -18,7 +18,7 @@ app.use(cookies());
 const userRoutes = require('./routes/user');
 const auctionRoutes = require('./routes/auction');
 
-app.use(cors({ origin: true }));
+app.use(cors({ credentials: true,origin: true }));
 
 //use custom routes
 app.use('/user', userRoutes);

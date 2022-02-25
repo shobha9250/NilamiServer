@@ -112,7 +112,7 @@ async function login(req, res) {
 					'token',
 					jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
 				);
-				return res.status(501).json({
+				return res.status(200).json({
 					success: 1,
 					message: 'successfully signed up',
 				});
