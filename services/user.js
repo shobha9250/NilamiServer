@@ -49,7 +49,7 @@ async function signUp(req, res) {
 				'token',
 				jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
 			);
-			return res.status(501).json({
+			return res.status(200).json({
 				success: 1,
 				message: 'successfully signed up',
 			});
@@ -72,7 +72,7 @@ async function login(req, res) {
 		const row = await db.query(
 			`SELECT * FROM user_data WHERE email='${email}'`
 		);
-		if (!row) {
+		if (row.length == 0) {
 			return res.status(404).json({
 				error: "user with this email doesn't exist",
 			});
@@ -102,6 +102,7 @@ async function login(req, res) {
 			// 		}
 			// 	})
 			// 	.catch((err) => console.log(err));
+			console.log(row);
 			if(password == row[0].password){
 				const payload = {
 					user_id: row[0].user_id,
@@ -114,7 +115,7 @@ async function login(req, res) {
 				);
 				return res.status(200).json({
 					success: 1,
-					message: 'successfully signed up',
+					message: 'successfully login',
 				});
 			}
 		}
@@ -143,7 +144,7 @@ async function updateUserInfo(req,res) {
 						WHERE user_name='${req.user.username}'`;
 	try {
 		await db.query(updateQuery);
-		return res.status(501).json({
+		return res.status(200).json({
 			success: 1,
 			message: 'successfully updated',
 		});
@@ -161,7 +162,7 @@ async function addUserAddress(req,res){
 		address: req.body.address,
 		city: req.body.city,
 		pincode: req.body.pincode,
-		mobile: req.body.pincode,
+		mobile: req.body.mobile,
 		address_id: uuidv4()
 	}
 	let addressQuery = `INSERT INTO 
@@ -169,7 +170,7 @@ async function addUserAddress(req,res){
 						VALUES('${newAddress.address_id}','${req.user.user_id}','${newAddress.address}','${newAddress.city}','${newAddress.pincode}','${newAddress.mobile}')`;
 	try {
 		await db.query(addressQuery);
-		return res.status(501).json({
+		return res.status(200).json({
 			success: 1,
 			message: 'successfully added address',
 		});
@@ -187,7 +188,7 @@ async function deleteUserAddress(req,res){
 	let addressQuery = `DELETE FROM user_address WHERE address_id='${address_id}'`;
 	try {
 		await db.query(addressQuery);
-		return res.status(501).json({
+		return res.status(200).json({
 			success: 1,
 			message: 'successfully deletd address',
 		});

@@ -37,12 +37,12 @@ async function addAuction(req) {
 		await db.query(productQuery);
 		let insertQuery = `INSERT INTO auction` + auctionRows + `values ('${auctionData.auction_id}','${auctionData.product_id}', '${auctionData.auction_status}', '${auctionData.n_bidders}','${auctionData.is_private}','${auctionData.n_likes}','${auctionData.auctioneer_id}','${auctionData.start_date}', '${auctionData.end_date}','${auctionData.start_time}', '${auctionData.end_time}')`;
 		await db.query(insertQuery);
-		return res.status(501).json({
+		return res.status(200).json({
 			success: 1,
 			message: 'successfully created auction',
 		});
 	} catch (error) {
-		return res.status(500).json({
+		return res.json({
 			success: 0,
 			error: error,
 		});
