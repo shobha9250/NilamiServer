@@ -3,6 +3,12 @@ const { addAuction, displayFeed, displayAuction, modifyAuction, updateLikes, cat
 const router = require("express").Router();
 const {inviteSuggestions} = require("../services/inviteSuggestion");
 
+
+//@type      POST
+//@route     /auction/user
+//@desc      route for creating a new auction
+//@access    PRIVATE
+
 router.post('/new',verifyToken, async function (req, res, next) {
 	console.log('Adding new auction details');
 	try {
@@ -14,6 +20,11 @@ router.post('/new',verifyToken, async function (req, res, next) {
 	}
 });
 
+//@type      GET
+//@route     /auction/feed
+//@desc      route for getting feed of public auctions
+//@access    PUBLIC
+
 router.get('/feed', async function (req, res, next) {
 	console.log('Generating auction feed.');
 	try {
@@ -23,6 +34,11 @@ router.get('/feed', async function (req, res, next) {
 		next(err);
 	}
 });
+
+//@type      GET
+//@route     /auction/id/:id
+//@desc      route for getting details of a particular auction
+//@access    PUBLIC
 
 router.get('/id/:id', async function (req, res, next) {
 	console.log('Details for auction with id ' + req.params.id);
@@ -34,6 +50,11 @@ router.get('/id/:id', async function (req, res, next) {
 	}
 });
 
+//@type      PUT
+//@route     /auction/edit/:id
+//@desc      route for editing an auction
+//@access    PRIVATE
+
 router.put('/edit/:id',verifyToken,verifyAuctioneer, async function (req, res, next) {
 	console.log('Modify details for auction with id ' + req.params.id);
 	try {
@@ -43,6 +64,11 @@ router.put('/edit/:id',verifyToken,verifyAuctioneer, async function (req, res, n
 		next(err);
 	}
 });
+
+//@type      PUT
+//@route     /auction/add_like/:id
+//@desc      route for adding a like to a auction post
+//@access    PRIVATE
 
 router.put('/add_like/:id',verifyToken, async function (req, res, next) {
     console.log('Add a like for auction with id ' + req.params.id)
@@ -54,6 +80,11 @@ router.put('/add_like/:id',verifyToken, async function (req, res, next) {
     }
 });
 
+//@type      GET
+//@route     /auction/category_filter/:category
+//@desc      route for filtering out feed on category basis
+//@access    PUBLIC
+
 router.get('/category_filter/:category', async function (req, res, next) {
     console.log('Details for auction with category ' + req.params.category)
     try {
@@ -64,6 +95,11 @@ router.get('/category_filter/:category', async function (req, res, next) {
     }
 });
 
+//@type      GET
+//@route     /auction/location_filter/:location
+//@desc      route for filtering out feed on location basis
+//@access    PUBLIC
+
 router.get('/location_filter/:location', async function (req, res, next) {
     console.log('Details for auction with location ' + req.params.location)
     try {
@@ -73,6 +109,11 @@ router.get('/location_filter/:location', async function (req, res, next) {
         next(err);
     }
 });
+
+//@type      GET
+//@route     /auction/sort_auctions
+//@desc      route for sorting out feed on estimated price 
+//@access    PUBLIC
 
 router.get('/sort_auctions', async function (req, res, next) {
     console.log('Details for auction with sorted')
