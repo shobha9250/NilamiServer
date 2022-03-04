@@ -47,11 +47,12 @@ async function signUp(req, res) {
 			await db.query(addressQuery);
 			res.cookie(
 				'token',
-				jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
+				jwt.sign(payload, config.jwt.secret)
 			);
 			return res.status(200).json({
 				success: 1,
 				message: 'successfully signed up',
+				user_id: `${inputData.user_id}`
 			});
 			
 		} 
@@ -111,11 +112,12 @@ async function login(req, res) {
 				};
 				res.cookie(
 					'token',
-					jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
+					jwt.sign(payload, config.jwt.secret)
 				);
 				return res.status(200).json({
 					success: 1,
 					message: 'successfully login',
+					user_id: `${row[0].user_id}`
 				});
 			}
 		}
