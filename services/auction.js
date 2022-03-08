@@ -76,7 +76,7 @@ async function displayAuction(auction_id) {
 							WHERE auction_id='${auction_id}'`;
 		const rows = await db.query(displayQuery);
 		const auction = helper.emptyOrRows(rows);
-		return auction;
+		return auction[0];
 	} catch (error) {
 		return {
 			success: 0,

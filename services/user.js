@@ -23,6 +23,7 @@ async function signUp(req, res) {
 		user_id: uuidv4(),
 		username: req.body.email.substring(0, req.body.email.lastIndexOf('@')),
 	};
+	console.log(inputData);
 	try {
 		const rows = await db.query(
 			`SELECT * FROM user_data WHERE email='${inputData.email}'`
@@ -68,11 +69,11 @@ async function signUp(req, res) {
 async function login(req, res) {
 	const email = req.body.email;
 	const password = req.body.password;
-
 	try {
 		const row = await db.query(
 			`SELECT * FROM user_data WHERE email='${email}'`
 		);
+		console.log(row);
 		if (row.length == 0) {
 			return res.status(404).json({
 				error: "user with this email doesn't exist",
@@ -110,6 +111,8 @@ async function login(req, res) {
 					username: row[0].user_name,
 					email: row[0].email,
 				};
+				console.log("Babitha");
+				console.log(config.jwt.secret);
 				res.cookie(
 					'token',
 					jwt.sign(payload, config.jwt.secret)
@@ -351,6 +354,26 @@ async function bid(req,res) {
 	}
 }
 
+async function allUsers(req, res) {
+	// console.log(req.user);
+	let userInfoQuery = `SELECT * FROM user_data`;
+
+	try {
+		const userArray = await db.query(userInfoQuery);
+		console.log(userArray);
+		return res.status(200).json({
+			success: 1,
+			userData: {userArray},
+		});
+	} catch (error) {
+		console.log(error);
+		return res.json({
+			success: 0,
+			message: `${error}`,
+		});
+	}
+}
+
 
 module.exports = {
 	signUp,
@@ -363,5 +386,6 @@ module.exports = {
 	deleteUserAddress,
 	getRegisteredAuctions,
 	bid,
-	getMyAuctions
+	getMyAuctions,
+	allUsers
 };

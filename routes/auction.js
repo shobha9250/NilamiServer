@@ -35,6 +35,68 @@ router.get('/feed', async function (req, res, next) {
 	}
 });
 
+function comp(a, b) {
+    if (a.start_time < b.start_time) {
+        return true;
+    }
+    else if (b.start_time > a.start_time) {
+        return false;
+    }
+    if (a.end_time < b.end_time) {
+        return true;
+    }
+    return false;
+}
+
+router.get('/suggestion', async function (req, res, next) {
+    console.log('Suggesting start time');
+    try {
+        const allAuctions = res.json(await displayFeed());
+        const filteredAuctions = [];
+        var j = 0;
+        for (var i = 0; i < allAuctions.size(); i++) {
+            if (req.body.estimated_price - 10000 <= allAuctions[i].estimated_price && req.body.estimated_price + 10000 >= allAuctions[i].estimated_price && req.body.category == allAuctions[i].category && req.body.city == allAuctions[i].city && allAuctions[i].start_time >= req.body.start_time && allAuctions[i].end_time <= req.body.end_time) {
+                filteredAuctions[j] = { start_time: allAuctions[i].start_time, end_time: allAuctions[i].end_time };
+                j++;
+            }
+        }
+        filteredAuctions.sort(comp);
+
+        if (j == 0 || filteredAuctions[0].start_time>=(req.body.start_time + req.body.duration)) {
+            return req.body.start_time;
+        }
+        else if (filteredAuctions[j - 1].end_time + req.body.duration <= req.body.end_time) {
+            return filteredAuctions[j - 1].end_time;
+        }
+        else{
+            var ind = -1;
+            var k1 = 0;
+            var k2 = 0;
+            var interections = j+1;
+            while (k1 < j) {
+                if (k1 < j - 1) {
+                    if (filteredAuctions[k1 + 1].start_time - filteredAuctions[k1].end_time >= req.body.duration) {
+                        return filteredAuctions[k1].end_time;
+                    }
+                }
+                k2 = max(k1, k2);
+                while (k2 < j && filteredAuctions[k2].start_time < (filteredAuctions[k1].start_time + req.body.duration)) {
+                    k2++;
+                }
+                if (k2 - k1 < interections) {
+                    interections = k2 - k1;
+                    ind = k1;
+                }
+                k1++;
+            }
+            return filteredAuctions[ind].start_time;
+        }
+    } catch (err) {
+        console.error(`Error while feteching auctions : `, err.message);
+        next(err);
+    }
+});
+
 //@type      GET
 //@route     /auction/id/:id
 //@desc      route for getting details of a particular auction
