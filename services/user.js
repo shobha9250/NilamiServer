@@ -80,49 +80,29 @@ async function login(req, res) {
 			});
 		} else {
 
-			/*DO NOT REMOVE THIS CODE */
-
-			// bcrypt
-			// 	.compare(password, row[0].password)
-			// 	.then((isCorrect) => {
-			// 		if (isCorrect) {
-			// 			const payload = {
-			// 				user_id: row[0].user_id,
-			// 				username: row[0].user_name,
-			// 				email: row[0].email,
-			// 			};
-			// 			res.cookie(
-			// 				'token',
-			// 				jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
-			// 			);
-			// 			return res.status(501).json({
-			// 				success: 1,
-			// 				message: 'successfully signed up',
-			// 			});
-			// 		} else {
-			// 			res.status(400).json({ passworderror: 'password is not correct' });
-			// 		}
-			// 	})
-			// 	.catch((err) => console.log(err));
-			console.log(row);
-			if(password == row[0].password){
-				const payload = {
-					user_id: row[0].user_id,
-					username: row[0].user_name,
-					email: row[0].email,
-				};
-				console.log("Babitha");
-				console.log(config.jwt.secret);
-				res.cookie(
-					'token',
-					jwt.sign(payload, config.jwt.secret)
-				);
-				return res.status(200).json({
-					success: 1,
-					message: 'successfully login',
-					user_id: `${row[0].user_id}`
-				});
-			}
+			bcrypt
+				.compare(password, row[0].password)
+				.then((isCorrect) => {
+					if (isCorrect) {
+						const payload = {
+							user_id: row[0].user_id,
+							username: row[0].user_name,
+							email: row[0].email,
+						};
+						res.cookie(
+							'token',
+							jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
+						);
+						return res.status(200).json({
+							success: 1,
+							message: 'successfully logged in',
+							user_id: `${row[0].user_id}`
+						});
+					} else {
+						res.status(400).json({ passworderror: 'password is not correct' });
+					}
+				})
+				.catch((err) => console.log(err));
 		}
 	} catch (error) {
 		console.log(error);
@@ -233,12 +213,13 @@ async function getUserDetails(req,res) {
 /* get user registered auctions(upcoming, completed, ongoing) */
 async function getRegisteredAuctions(req,res) {
 	const user_id = req.user.user_id;
-	let getRegisteredAuctionQuery = `SELECT auction_id FROM user_auction_reg WHERE user_id='${user_id}'`;
+	let getRegisteredAuctionQuery = `SELECT* FROM auction INNER JOIN product ON auction.product_id=product.product_id WHERE auction_id IN (SELECT auction_id FROM user_auction_reg WHERE user_id='${user_id}')`;
 	try {
-		const registeredEvents = await db.query(getRegisteredAuctionQuery);
+		const registeredAuctions = await db.query(getRegisteredAuctionQuery);
+		console.log(registeredAuctions);
 		return res.status(200).json({
 			success:1,
-			registeredEvents: registeredEvents
+			registeredAuctions: registeredAuctions
 		});
 	} catch (error) {
 		console.log(error);
