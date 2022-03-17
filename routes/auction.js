@@ -5,15 +5,15 @@ const {inviteSuggestions} = require("../services/inviteSuggestion");
 
 
 //@type      POST
-//@route     /auction/user
+//@route     /auction/new
 //@desc      route for creating a new auction
 //@access    PRIVATE
 
 router.post('/new',verifyToken, async function (req, res, next) {
 	console.log('Adding new auction details');
 	try {
-		// await addAuction(req);
-        inviteSuggestions(req,res);
+		await addAuction(req,res);
+        // inviteSuggestions(req,res);
 	} catch (err) {
 		console.error(`Error while adding auction : `, err.message);
 		next(err);
@@ -71,7 +71,8 @@ router.put('/edit/:id',verifyToken,verifyAuctioneer, async function (req, res, n
 //@access    PRIVATE
 
 router.put('/add_like/:id',verifyToken, async function (req, res, next) {
-    console.log('Add a like for auction with id ' + req.params.id)
+    // console.log("sfs");
+    // console.log('Add a like for auction with id ' + req.params.id)
     try {
         res.json(await updateLikes(req.params.id));
     } catch (err) {

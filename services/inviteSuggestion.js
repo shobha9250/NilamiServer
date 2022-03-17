@@ -54,12 +54,12 @@ async function inviteSuggestions (req,res) {
             });
             queue.dequeue();
         }
-        return res.json({
+        return {
 			suggestedUsers
-		});
+		};
     } catch (error) {
         console.log(error);
-        return res.json({error});
+        return {error};
     }
 }
 
