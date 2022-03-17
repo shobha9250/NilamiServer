@@ -9,7 +9,8 @@ const {
 	deleteUserAddress,
 	getRegisteredAuctions,
 	bid,
-	getMyAuctions
+	getMyAuctions,
+	allUsers
 } = require('../services/user');
 const router = require('express').Router();
 const { verifyToken } = require('../middlewares/auth');
@@ -45,6 +46,16 @@ router.post('/login', async function (req, res, next) {
 		await login(req, res);
 	} catch (err) {
 		console.error(`Error while signing up : `, err.message);
+		next(err);
+	}
+});
+
+router.get('/allUsers', async function (req, res, next) {
+	console.log('allUsers');
+	try {
+		await allUsers(req, res);
+	} catch (err) {
+		console.error(`Error while displaying all users : `, err.message);
 		next(err);
 	}
 });

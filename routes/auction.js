@@ -1,7 +1,8 @@
 const { verifyToken, verifyAuctioneer } = require("../middlewares/auth");
 const { addAuction, displayFeed, displayAuction, modifyAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter } = require("../services/auction");
 const router = require("express").Router();
-const {inviteSuggestions} = require("../services/inviteSuggestion");
+const { inviteSuggestions } = require("../services/inviteSuggestion");
+const {startTimeSuggestion} = require("../services/startTimeSuggestion");
 
 
 //@type      POST
@@ -34,6 +35,16 @@ router.get('/feed', async function (req, res, next) {
 		next(err);
 	}
 });
+
+// router.get('/suggestion', async function (req, res, next) {
+//     console.log('Suggestion start time and date');
+// 	try {
+// 		startTimeSuggestion(req, res, next);
+// 	} catch (err) {
+// 		console.error(`Error while suggesting start time, date: `, err.message);
+// 		next(err);
+// 	}
+// });
 
 //@type      GET
 //@route     /auction/id/:id
