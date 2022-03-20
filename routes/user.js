@@ -14,6 +14,8 @@ const {
 } = require('../services/user');
 const router = require('express').Router();
 const { verifyToken } = require('../middlewares/auth');
+const { verifyRegistration } = require("../middlewares/registered");
+
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
@@ -184,6 +186,8 @@ router.post('/unregister/auction', verifyToken, async function (req, res, next) 
 //@route     /user/bid/auction/:id
 //@desc      route for bidding
 //@access    PRIVATE
+
+//add the middleware also
 
 router.post('/bid/auction/:auction_id', verifyToken, async function (req, res, next) {
 	console.log('Bid for auction ' + req.params.auction_id);

@@ -1,5 +1,5 @@
 const { verifyToken, verifyAuctioneer } = require("../middlewares/auth");
-const { addAuction, displayFeed, displayAuction, modifyAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter } = require("../services/auction");
+const { addAuction, displayFeed, getBidDetails, displayAuction, modifyAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter,getWinnerName } = require("../services/auction");
 const router = require("express").Router();
 const { inviteSuggestions } = require("../services/inviteSuggestion");
 const {startTimeSuggestion} = require("../services/startTimeSuggestion");
@@ -55,6 +55,36 @@ router.get('/id/:id', async function (req, res, next) {
 	console.log('Details for auction with id ' + req.params.id);
 	try {
 		res.json(await displayAuction(req.params.id));
+	} catch (err) {
+		console.error(`Error while displaying auction : `, err.message);
+		next(err);
+	}
+});
+
+//@type      GET
+//@route     /auction/getWinnerName/id/:id
+//@desc      route for getting details of a winner of a particular auction
+//@access    PUBLIC
+
+router.get('/getWinnerName/id/:id', async function (req, res, next) {
+	console.log('Details of winner for auction with id ' + req.params.id);
+	try {
+		res.json(await getWinnerName(req));
+	} catch (err) {
+		console.error(`Error while displaying auction : `, err.message);
+		next(err);
+	}
+});
+
+//@type      GET
+//@route     /auction/bidDetails/id/:id
+//@desc      route for getting bidding details of a particular auction
+//@access    PRIVATE
+
+router.get('/bidDetails/id/:id', async function (req, res, next) {
+	console.log('Bid Details for auction with id ' + req.params.id);
+	try {
+		await getBidDetails(req,res);
 	} catch (err) {
 		console.error(`Error while displaying auction : `, err.message);
 		next(err);

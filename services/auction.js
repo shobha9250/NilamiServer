@@ -1,6 +1,7 @@
 const db = require('./db');
 const helper = require('../helper');
 const { v4: uuidv4 } = require('uuid');
+const mailHelper = require("./mailHelper");
 const {inviteSuggestions} = require("./inviteSuggestion");
 
 const auctionRows = "(auction_id,product_id,auction_status,n_bidders,is_private,n_likes,auctioneer_id,start_date,end_date,start_time,end_time)"
@@ -38,7 +39,20 @@ async function addAuction(req,res) {
 
 	if(auctionData.inviteBidders == "on" && auctionData.is_private == "off"){
 		invitedBidders = await inviteSuggestions(req,res);
-		console.log(invitedBidders);
+		if(invitedBidders.suggestedMails.length > 0){
+		// try {
+		// 	let data=	await mailHelper({
+		// 		email: invitedBidders.suggestedMails,
+		// 		subject: "Auction Invitation",
+		// 		text: "Auction Invitation",
+		// 		html: `<h4>Hola<br>An auction with category = ${productData.product_category} is going to be organized. 
+		// 				Check Out the details here: <a href="http://localhost:3001/feed/${auctionData.auction_id}">More info</a></h4>`
+		// 		});
+		// 		console.log("Invitation sent");
+		// 	} catch (error) {
+		// 		console.log(error);
+		// 	}
+		}
 	}else{
 		console.log("Auction is private of user does not want suggestions");
 	}
@@ -50,12 +64,13 @@ async function addAuction(req,res) {
 		// await db.query(insertQuery);
 		return res.status(200).json({
 			success: 1,
+			n_suggestions: `${invitedBidders.suggestedMails.length}`,
 			message: 'successfully created auction',
 		});
 	} catch (error) {
 		return res.json({
 			success: 0,
-			error: error,
+			error: `${error}`,
 		});
 	}
 }
@@ -70,12 +85,61 @@ async function displayFeed() {
 		const rows = await db.query(feedQuery);
 		const displayFeed = helper.emptyOrRows(rows);
 		console.log(rows);
+
 		return displayFeed;
 	} catch (error) {
 		return {
 			success: 0,
 			error: `${error}`,
 		};
+	}
+}
+
+async function getWinnerName(req) {
+	const auction_id = req.params.id;
+	console.log(auction_id);
+	try {
+		var winnerName;
+		const winnerUserId = (await db.query(`SELECT winner_user_id FROM auction WHERE auction_id = '${auction_id}'`))[0].winner_user_id;
+		console.log(winnerUserId);
+		const query = `SELECT anonymous FROM user_auction_reg WHERE user_id = '${winnerUserId}'`;
+		const isAnonymous = (await db.query(query))[0].anonymous;
+		console.log(isAnonymous);
+		if(isAnonymous == "off"){
+			const userNameQuery = `SELECT user_name FROM user_data WHERE user_id = '${winnerUserId}'`;
+			const userName = await db.query(userNameQuery);
+			console.log(userName);
+			winnerName = userName;
+		}else{
+			winnerName = "Anonymous";
+		}
+		return winnerName;
+	} catch (error) {
+		return {
+			success: 0,
+			error: `${error}`,
+		};
+	}
+}
+
+
+
+async function getBidDetails(req,res) {
+	try{
+		let getTopBids = `SELECT * FROM auction_bid_details WHERE auction_id='${req.params.id}'`;
+		let topBidIds = (await db.query(getTopBids))[0];
+		let topBidDetailsQuery = `SELECT bid_amount FROM auction_bids WHERE bid_id IN ('${topBidIds.highest_bid_id}','${topBidIds.second_highest_bid_id}','${topBidIds.third_highest_bid_id}') ORDER BY bid_amount DESC`
+		let topBidDetails = await db.query(topBidDetailsQuery);
+		// console.log(topBidDetails);
+		return res.status(200).json({
+			success: 1,
+			bidDetails: topBidDetails
+		});
+	}catch (error) {
+		return res.json({
+			success: 0,
+			error: `${error}`
+		});
 	}
 }
 
@@ -226,4 +290,6 @@ module.exports = {
 	categoryAuctionFilter,
 	locationAuctionFilter,
 	sortedAuctionFilter,
+	getBidDetails,
+	getWinnerName
 };

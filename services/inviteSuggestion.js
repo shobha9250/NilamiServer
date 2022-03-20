@@ -28,7 +28,7 @@ class Queue{
 async function inviteSuggestions (req,res) {
     try {
         const client_user_id = req.user.user_id;
-        const category = "antique";
+        const category = req.body.product_category;
         var suggestedUsers = [];
         var queue = new Queue();
         const visited = new Map();
@@ -48,14 +48,21 @@ async function inviteSuggestions (req,res) {
             winnerArray.forEach(winner => {
                 if(winner.winner_user_id && !visited.get(winner.winner_user_id)){
                     queue.enqueue(winner.winner_user_id);
-                    suggestedUsers.push(winner.winner_user_id);
+                    suggestedUsers.push('"'+winner.winner_user_id+'"');
                     visited.set(winner.winner_user_id,true);
                 }
             });
             queue.dequeue();
         }
+        const userMailQuery = `SELECT email FROM user_data WHERE user_id IN (${suggestedUsers})`;
+        const mailObjectArray = await db.query(userMailQuery);
+        const suggestedMails = [];
+        mailObjectArray.forEach(mailObject => {
+            suggestedMails.push(mailObject.email);
+        });
+        console.log(suggestedMails);
         return {
-			suggestedUsers
+			suggestedMails
 		};
     } catch (error) {
         console.log(error);

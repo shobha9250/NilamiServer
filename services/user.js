@@ -5,7 +5,10 @@ const helper = require('../helper');
 const bcrypt = require('bcrypt');
 const config = require('../config');
 const jwt = require('jsonwebtoken');
+const mailHelper = require("./mailHelper");
 const { v4: uuidv4 } = require('uuid');
+const date = require('date-and-time')
+
 
 async function signUp(req, res) {
 	let hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -255,9 +258,27 @@ async function getMyAuctions(req,res) {
 async function registerForAuction(req,res) {
 	const auction_id = req.body.auction_id;
 	const user_id = req.user.user_id;
-	let insertQuery = `INSERT INTO user_auction_reg(user_id, auction_id) values ('${user_id}','${auction_id}')`;
+	const anonymous = req.body.anonymous;
+
+	let insertQuery = `INSERT INTO user_auction_reg(user_id, auction_id,anonymous) values ('${user_id}','${auction_id}','${anonymous}')`;
 	try {
 		await db.query(insertQuery);
+
+		try {
+			const userMailQuery = `SELECT email FROM user_data WHERE user_id = '${user_id}'`;
+			const userMail = (await db.query(userMailQuery))[0]; 
+			let data=	await mailHelper({
+				email: userMail.email,
+				subject: "Auction Registration",
+				text: "Auction Registration",
+				html: `<h4>Successfully registered for the Auction.<br> 
+						Check out the details here: <a href="http://localhost:3001/feed/${auction_id}"> More info</a></h4>`
+				});
+				console.log("Invitation sent");
+			} catch (error) {
+				console.log(error);
+			}
+
 		return res.status(200).json({
 			success: 1,
 			message : "successfully registered"
@@ -293,24 +314,68 @@ async function unregisterForAuction(req,res) {
 
 /* user bidding in an auction */
 async function bid(req,res) {
-	const auction_id = req.params.auction_id;
-	const bidValue = req.body.bidValue;
-	let getTopBids = `SELECT * FROM auction_bid_details WHERE auction_id='${auction_id}'`;
+	const inputBidDetails = {
+		bid_id: uuidv4(),
+		auction_id: req.params.auction_id,
+		bid_amount: req.body.bid_amount,
+		user_id: req.user.user_id
+	}
 	try {
-		let bidDetails = (await db.query(getTopBids))[0];
-		if(!bidDetails){
-			console.log("dd");
-			const insertBidQuery = `INSERT INTO auction_bid_details VALUES('${auction_id}','0','0','0')`;
-			await db.query(insertBidQuery);
-			bidDetails = (await db.query(getTopBids))[0];
-			console.log(bidDetails);
+		const auctionDetailsQuery = `SELECT start_date,end_date,start_time,end_time FROM auction WHERE auction_id='${inputBidDetails.auction_id}'`; 
+		const auctionDetails = (await db.query(auctionDetailsQuery))[0];
+
+		var myDate = new Date();
+    	var currentDate = date.format(myDate, "DD/MM/YY");
+    	var currentTime = date.format(myDate, "hh:mm:ss");
+		console.log(currentDate);
+		console.log(currentTime);
+    	if((date.format(auctionDetails.end_date,"DD/MM/YY") < currentDate) || ((date.format(auctionDetails.end_date,"DD/MM/YY") == currentDate)&& (currentTime > auctionDetails.end_time) ) )
+      	{
+			return res.json({
+				success: 0,
+				message : "Auction has ended"
+			});
+		  }
+		
+		const getStartingPrice = `SELECT starting_price FROM product 
+								WHERE product_id = (SELECT product_id FROM auction
+								 WHERE auction_id='${inputBidDetails.auction_id}')`;
+		const startingPrice = (await db.query(getStartingPrice))[0].startingPrice;
+		if(startingPrice > inputBidDetails.bid_amount){
+			console.log("sfsf");
+			console.log(startingPrice);
+			console.log(inputBidDetails.bid_amount < startingPrice);
+			return res.json({
+				success: 0,
+				message : "your bid is less than than the starting bid"
+			});
 		}
-		if(bidValue > bidDetails.highest_bid){
+
+		let insertBidQuery = `INSERT INTO auction_bids 
+							VALUES('${inputBidDetails.bid_id}','${inputBidDetails.auction_id}','${inputBidDetails.bid_amount}','${inputBidDetails.user_id}')`;
+		await db.query(insertBidQuery);
+		
+		let getTopBids = `SELECT * FROM auction_bid_details WHERE auction_id='${inputBidDetails.auction_id}'`;
+		let topBidIds = (await db.query(getTopBids))[0];
+		if(!topBidIds){
+			console.log("dd");
+			let insertBidQuery = `INSERT INTO auction_bid_details 
+								VALUES('${inputBidDetails.auction_id}','${inputBidDetails.bid_id}','${inputBidDetails.bid_id}','${inputBidDetails.bid_id}')`;
+			await db.query(insertBidQuery);
+			topBidIds = (await db.query(getTopBids))[0];
+			console.log(topBidIds);
+		}
+		// console.log(topBidIds);
+		let topBidDetailsQuery = `SELECT bid_amount FROM auction_bids WHERE bid_id IN ('${topBidIds.highest_bid_id}','${topBidIds.second_highest_bid_id}','${topBidIds.third_highest_bid_id}') ORDER BY bid_amount DESC`;
+		let topBidDetails = await db.query(topBidDetailsQuery);
+
+		console.log(topBidDetails);
+		if(inputBidDetails.bid_amount > topBidDetails[0].bid_amount){
 			const updateBidQuery = `UPDATE auction_bid_details SET 
-									highest_bid='${bidValue}', 
-									second_highest_bid='${bidDetails.highest_bid}', 
-									third_highest_bid='${bidDetails.second_highest_bid}' 
-									WHERE auction_id ='${auction_id}'`;
+									highest_bid_id='${inputBidDetails.bid_id}', 
+									second_highest_bid_id='${topBidIds.highest_bid_id}', 
+									third_highest_bid_id='${topBidIds.second_highest_bid_id}' 
+									WHERE auction_id ='${inputBidDetails.auction_id}'`;
 			const updateWinnerQuery =`UPDATE auction SET winner_user_id='${req.user.user_id}'`;
 
 			await db.query(updateBidQuery);
@@ -326,11 +391,12 @@ async function bid(req,res) {
 				message : "your bid is less than than the highest bid"
 			});
 		}
+
 	} catch (error) {
 		console.log(error);
 		return res.json({
 			success: 0,
-			message: `${error}`,
+			error: `${error}`,
 		});
 	}
 }
