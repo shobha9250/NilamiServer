@@ -36,7 +36,6 @@ async function startTimeSuggestion(req, res, next) {
 						ORDER BY n_likes DESC,n_bidders DESC`;
         const allAuctions = await db.query(feedQuery);
         console.log(allAuctions);
-        console.log("feed brought in!");
         
         var startDate = new Date(req.body.start_date + ' ' + req.body.start_time);
         var endDate = new Date(req.body.end_date + ' ' + req.body.end_time);
@@ -76,7 +75,7 @@ async function startTimeSuggestion(req, res, next) {
         var ind = -1;
         var k1 = 0;
         var k2 = 0;
-        var interections = j+1;
+        var interections = j + 1;
         while (k1 < j) {
             if (k1 < j - 1) {
                 if ((filteredAuctions[k1 + 1].start_time - filteredAuctions[k1].end_time)/1000 >= duration) {
