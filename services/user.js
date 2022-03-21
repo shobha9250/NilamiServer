@@ -325,11 +325,11 @@ async function bid(req,res) {
 		const auctionDetails = (await db.query(auctionDetailsQuery))[0];
 
 		var myDate = new Date();
-    	var currentDate = date.format(myDate, "DD/MM/YY");
-    	var currentTime = date.format(myDate, "hh:mm:ss");
+    	var currentDate = date.format(myDate, "YYYY-MM-DD");
+    	var currentTime = date.format(myDate, "HH:mm:ss");
 		console.log(currentDate);
 		console.log(currentTime);
-    	if((date.format(auctionDetails.end_date,"DD/MM/YY") < currentDate) || ((date.format(auctionDetails.end_date,"DD/MM/YY") == currentDate)&& (currentTime > auctionDetails.end_time) ) )
+    	if((date.format(auctionDetails.end_date,"YYYY-MM-DD") < currentDate) || ((date.format(auctionDetails.end_date,"YYYY-MM-DD") == currentDate)&& (currentTime > auctionDetails.end_time) ) )
       	{
 			return res.json({
 				success: 0,

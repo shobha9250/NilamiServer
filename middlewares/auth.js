@@ -17,12 +17,12 @@ exports.verifyToken = (req, res, next) => {
 	return next();
 };
 
-exports.verifyAuctioneer = (req,res,next) => {
+exports.verifyAuctioneer = async(req,res,next) => {
 	// const user_id = req.user.user_id;
 	const auction_id = req.params.id;
 	try {
 		const findAuctioneerQuery = `SELECT auctioneer_id FROM auction WHERE auction_id='${auction_id}'`;
-		const auctioneer_id= (db.query(findAuctioneerQuery))[0];
+		const auctioneer_id= (await db.query(findAuctioneerQuery))[0];
 
 		console.log("hehe");
 		// console.log(userArray);
