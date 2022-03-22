@@ -56,7 +56,8 @@ async function signUp(req, res) {
 			return res.status(200).json({
 				success: 1,
 				message: 'successfully signed up',
-				user_id: `${inputData.user_id}`
+				user_id: `${inputData.user_id}`,
+				user_name: `${inputData.user_id}`
 			});
 			
 		} 
@@ -94,15 +95,16 @@ async function login(req, res) {
 						};
 						res.cookie(
 							'token',
-							jwt.sign(payload, config.jwt.secret, { expiresIn: 3600 })
+							jwt.sign(payload, config.jwt.secret)
 						);
 						return res.status(200).json({
 							success: 1,
 							message: 'successfully logged in',
-							user_id: `${row[0].user_id}`
+							user_id: `${row[0].user_id}`,
+							user_name:`${row[0].user_name}`
 						});
 					} else {
-						res.status(400).json({ passworderror: 'password is not correct' });
+						res.status(200).json({ passworderror: 'password is not correct' });
 					}
 				})
 				.catch((err) => console.log(err));
