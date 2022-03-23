@@ -130,6 +130,12 @@ async function getBidDetails(req,res) {
 	try{
 		let getTopBids = `SELECT * FROM auction_bid_details WHERE auction_id='${req.params.id}'`;
 		let topBidIds = (await db.query(getTopBids))[0];
+		if(!topBidIds){
+			return res.status(200).json({
+				success: 1,
+				bidDetails: [{bid_amount:0}]
+			});
+		}
 		let topBidDetailsQuery = `SELECT bid_amount FROM auction_bids WHERE bid_id IN ('${topBidIds.highest_bid_id}','${topBidIds.second_highest_bid_id}','${topBidIds.third_highest_bid_id}') ORDER BY bid_amount DESC`
 		let topBidDetails = await db.query(topBidDetailsQuery);
 		// console.log(topBidDetails);

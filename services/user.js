@@ -265,7 +265,8 @@ async function registerForAuction(req,res) {
 	let insertQuery = `INSERT INTO user_auction_reg(user_id, auction_id,anonymous) values ('${user_id}','${auction_id}','${anonymous}')`;
 	try {
 		await db.query(insertQuery);
-
+		const increaseBidderQuery = `UPDATE auction SET n_bidders=n_bidders+1 WHERE auction_id='${auction_id}'`;
+		await db.query(increaseBidderQuery);
 		try {
 			const userMailQuery = `SELECT email FROM user_data WHERE user_id = '${user_id}'`;
 			const userMail = (await db.query(userMailQuery))[0]; 
