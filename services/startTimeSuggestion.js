@@ -37,9 +37,9 @@ async function startTimeSuggestion(req, res, next) {
         const allAuctions = await db.query(feedQuery);
         console.log(allAuctions);
         
-        var startDate = new Date(req.body.start_date + ' ' + req.body.start_time);
-        var endDate = new Date(req.body.end_date + ' ' + req.body.end_time);
-        var estimated_price = req.body.estimated_price;
+        var freeStartDate = new Date(req.body.freeStartDate + ' ' + req.body.freeStartTime);
+        var freeEndDate = new Date(req.body.freeEndDate + ' ' + req.body.freeEndTime);
+        var estimated_price = req.body.estimatedPrice;
         var category = req.body.category;
         var city = req.body.city;
         var duration = req.body.duration; // duration is in seconds
@@ -49,26 +49,26 @@ async function startTimeSuggestion(req, res, next) {
 
         allAuctions.forEach(auction => {
             var tempString = auction.start_date;
-            var currStartDate = new Date(tempString.toString().substr(0, 10) + ' ' + auction.start_time);
+            var currAuctionStartDate = new Date(tempString.toString().substr(0, 10) + ' ' + auction.start_time);
             tempString = auction.end_date;
             var currEndDate = new Date(tempString.toString().substr(0, 10) + ' ' + auction.end_time);
-            if (estimated_price - 10000 <= auction.estimated_price && estimated_price + 10000 >= auction.estimated_price && category == auction.category && city == auction.city && !(currStartDate >= endDate || currEndDate <= startDate)) {
-                filteredAuctions[j] = { start_time: currStartDate, end_time: currEndDate };
+            if (estimated_price - 10000 <= auction.estimated_price && estimated_price + 10000 >= auction.estimated_price && category == auction.category && city == auction.city && !(currAuctionStartDate >= freeEndDate || currEndDate <= startDate)) {
+                filteredAuctions[j] = { start_time: currAuctionStartDate, end_time: currEndDate };
                 j++;
             }
         });
         filteredAuctions.sort(comp);
 
-        var temp = startDate;
+        var temp = freeStartDate;
         temp.setSeconds(temp.getSeconds() + duration);
 
         if (j == 0 || filteredAuctions[0].start_time >= temp) {
-            return startDate;
+            return freeStartDate;
         }
         else{
             temp = filteredAuctions[j - 1].end_time;
             temp.setSeconds(temp.getSeconds() + duration);
-            if (temp <= endDate) {
+            if (temp <= freeEndDate) {
                 return (filteredAuctions[j - 1].end_time);
             }
         }
@@ -84,7 +84,7 @@ async function startTimeSuggestion(req, res, next) {
             }
             k2 = max(k1, k2);
             while (k2 < j) {
-                temp = max(filteredAuctions[k1].start_time, startDate);
+                temp = max(filteredAuctions[k1].start_time, freeStartDate);
                 temp.setSeconds(temp.getSeconds() + duration);
                 if (filteredAuctions[k2].start_time >= temp) {
                     break;
@@ -97,7 +97,7 @@ async function startTimeSuggestion(req, res, next) {
             }
             k1++;
         }
-        return max(filteredAuctions[ind].start_time, startDate);
+        return max(filteredAuctions[ind].start_time, freeStartDate);
     } catch (err) {
         console.error(`Error inside suggestion function: `, err);
         return res.json({err});
