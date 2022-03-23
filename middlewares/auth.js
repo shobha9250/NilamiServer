@@ -24,7 +24,6 @@ exports.verifyAuctioneer = async(req,res,next) => {
 		const findAuctioneerQuery = `SELECT auctioneer_id FROM auction WHERE auction_id='${auction_id}'`;
 		const auctioneer_id= (await db.query(findAuctioneerQuery))[0];
 
-		console.log("hehe");
 		// console.log(userArray);
 		if(auctioneer_id != req.user.user_id){
 			return res.status(403).json({

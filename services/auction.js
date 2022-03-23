@@ -3,6 +3,8 @@ const helper = require('../helper');
 const { v4: uuidv4 } = require('uuid');
 const mailHelper = require("./mailHelper");
 const {inviteSuggestions} = require("./inviteSuggestion");
+const date = require('date-and-time')
+
 
 const auctionRows = "(auction_id,product_id,auction_status,n_bidders,is_private,n_likes,auctioneer_id,start_date,end_date,start_time,end_time)"
 const productRows = "(product_id,product_name,product_details,product_category,product_pic,estimated_price,starting_price,city,pincode)"
@@ -189,6 +191,28 @@ async function modifyAuction(req) {
 	}
 }
 
+async function closeAuction(req,res){
+	const auction_id= req.params.id;
+	try {
+		var myDate = new Date();
+    	var currentDate = date.format(myDate, "YYYY-MM-DD");
+    	var currentTime = date.format(myDate, "HH:mm:ss");
+		const updateQuery = `UPDATE auction 
+							SET end_date='${currentDate}',end_time='${currentTime}' 
+							WHERE auction_id='${auction_id}'`;
+		await db.query(updateQuery);
+		return {
+			success: 1,
+			message: 'auction closed',
+		};
+	} catch (error) {
+		return {
+			success: 0,
+			error: `${error}`,
+		};
+	}
+}
+
 /* Add a like to the auction given auction_id */
 async function updateLikes(auction_id) {
 	
@@ -291,5 +315,6 @@ module.exports = {
 	locationAuctionFilter,
 	sortedAuctionFilter,
 	getBidDetails,
-	getWinnerName
+	getWinnerName,
+	closeAuction
 };

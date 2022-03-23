@@ -1,5 +1,5 @@
 const { verifyToken, verifyAuctioneer } = require("../middlewares/auth");
-const { addAuction, displayFeed, getBidDetails, displayAuction, modifyAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter,getWinnerName } = require("../services/auction");
+const { addAuction, displayFeed, getBidDetails, displayAuction, modifyAuction,closeAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter,getWinnerName } = require("../services/auction");
 const router = require("express").Router();
 const { inviteSuggestions } = require("../services/inviteSuggestion");
 const {startTimeSuggestion} = require("../services/startTimeSuggestion");
@@ -108,6 +108,21 @@ router.put('/edit/:id',verifyToken,verifyAuctioneer, async function (req, res, n
 		res.json(await modifyAuction(req));
 	} catch (err) {
 		console.error(`Error while modifying auction : `, err.message);
+		next(err);
+	}
+});
+
+//@type      PUT
+//@route     /auction/close/:id
+//@desc      route for closing an auction
+//@access    PRIVATE
+
+router.put('/close/:id',verifyToken, async function (req, res, next) {
+	console.log('Close auction with id ' + req.params.id);
+	try {
+		res.json(await closeAuction(req));
+	} catch (err) {
+		console.error(`Error while closing auction : `, err.message);
 		next(err);
 	}
 });
