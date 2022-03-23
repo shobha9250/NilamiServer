@@ -37,9 +37,9 @@ async function startTimeSuggestion(req, res, next) {
         const allAuctions = await db.query(feedQuery);
         console.log(allAuctions);
         
-        var freeStartDate = new Date(req.body.start_date + ' ' + req.body.start_time);
-        var freeEndDate = new Date(req.body.end_date + ' ' + req.body.end_time);
-        var estimated_price = req.body.estimated_price;
+        var freeStartDate = new Date(req.body.freeStartDate + ' ' + req.body.freeStartTime);
+        var freeEndDate = new Date(req.body.freeEndDate + ' ' + req.body.freeEndTime);
+        var estimated_price = req.body.estimatedPrice;
         var category = req.body.category;
         var city = req.body.city;
         var duration = req.body.duration; // duration is in seconds
