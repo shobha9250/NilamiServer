@@ -41,7 +41,7 @@ router.get('/feed', async function (req, res, next) {
 //@desc      route for getting time suggestions
 //@access    PRIVATE
 
-router.post('/timeSuggestion',verifyToken, async function (req, res, next) {
+router.post('/timeSuggestion', async function (req, res, next) {
     console.log('Suggestion start time and date');
 	console.log(req.body);
 	try {

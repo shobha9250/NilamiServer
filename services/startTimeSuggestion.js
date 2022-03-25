@@ -35,7 +35,6 @@ async function startTimeSuggestion(req, res, next) {
 						INNER JOIN product ON auction.product_id=product.product_id 
 						ORDER BY n_likes DESC,n_bidders DESC`;
         const allAuctions = await db.query(feedQuery);
-        console.log(allAuctions);
         
         var freeStartDate = new Date(req.body.freeStartDate + ' ' + req.body.freeStartTime);
         var freeEndDate = new Date(req.body.freeEndDate + ' ' + req.body.freeEndTime);
@@ -49,9 +48,21 @@ async function startTimeSuggestion(req, res, next) {
 
         allAuctions.forEach(auction => {
             var tempString = auction.start_date;
-            var currAuctionStartDate = new Date(tempString.toString().substr(0, 10) + ' ' + auction.start_time);
+            var tempTimeStampString = tempString.toString();
+            var i = 0;
+            while (i < tempTimeStampString.length && tempTimeStampString[i] != ' ') {
+                i++;
+            }
+            i++;
+            var currAuctionStartDate = new Date(tempTimeStampString.substr(i, 11) + ' '+auction.start_time);
             tempString = auction.end_date;
-            var currEndDate = new Date(tempString.toString().substr(0, 10) + ' ' + auction.end_time);
+            tempTimeStampString = tempString.toString();
+            i = 0;
+            while (i < tempTimeStampString.length && tempTimeStampString[i] != ' ') {
+                i++;
+            }
+            i++;
+            var currEndDate = new Date(tempTimeStampString.substr(i, 11) + ' ' + auction.end_time);
             if (estimated_price - 10000 <= auction.estimated_price && estimated_price + 10000 >= auction.estimated_price && category == auction.category && city == auction.city && !(currAuctionStartDate >= freeEndDate || currEndDate <= startDate)) {
                 filteredAuctions[j] = { start_time: currAuctionStartDate, end_time: currEndDate };
                 j++;
@@ -59,17 +70,19 @@ async function startTimeSuggestion(req, res, next) {
         });
         filteredAuctions.sort(comp);
 
-        var temp = freeStartDate;
+        var temp = new Date (freeStartDate);
         temp.setSeconds(temp.getSeconds() + duration);
 
         if (j == 0 || filteredAuctions[0].start_time >= temp) {
-            return freeStartDate;
+            var ans = new Date(freeStartDate).toLocaleString(undefined, {timeZone: 'Asia/Kolkata'});
+            return ans;
         }
         else{
-            temp = filteredAuctions[j - 1].end_time;
+            temp = new Date (filteredAuctions[j - 1].end_time);
             temp.setSeconds(temp.getSeconds() + duration);
             if (temp <= freeEndDate) {
-                return (filteredAuctions[j - 1].end_time);
+                var ans = new Date(filteredAuctions[j - 1].end_time).toLocaleString(undefined, {timeZone: 'Asia/Kolkata'});
+                return ans;
             }
         }
         var ind = -1;
@@ -79,12 +92,13 @@ async function startTimeSuggestion(req, res, next) {
         while (k1 < j) {
             if (k1 < j - 1) {
                 if ((filteredAuctions[k1 + 1].start_time - filteredAuctions[k1].end_time)/1000 >= duration) {
-                    return filteredAuctions[k1].end_time;
+                    var ans = new Date(filteredAuctions[k1].end_time).toLocaleString(undefined, {timeZone: 'Asia/Kolkata'});
+                    return ans;
                 }
             }
             k2 = max(k1, k2);
             while (k2 < j) {
-                temp = max(filteredAuctions[k1].start_time, freeStartDate);
+                temp = new Date (max(filteredAuctions[k1].start_time, freeStartDate));
                 temp.setSeconds(temp.getSeconds() + duration);
                 if (filteredAuctions[k2].start_time >= temp) {
                     break;
@@ -97,7 +111,8 @@ async function startTimeSuggestion(req, res, next) {
             }
             k1++;
         }
-        return max(filteredAuctions[ind].start_time, freeStartDate);
+        var ans = new Date(max(filteredAuctions[ind].start_time, freeStartDate)).toLocaleString(undefined, {timeZone: 'Asia/Kolkata'});
+        return ans;
     } catch (err) {
         console.error(`Error inside suggestion function: `, err);
         return res.json({err});
