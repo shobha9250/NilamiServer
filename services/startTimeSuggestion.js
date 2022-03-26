@@ -50,6 +50,9 @@ async function startTimeSuggestion(req, res, next) {
         allAuctions.forEach(auction => {
             var tempString = auction.start_date;
             var currAuctionStartDate = new Date(tempString.toString().substr(0, 10) + ' ' + auction.start_time);
+            console.log(currAuctionStartDate);
+            console.log(tempString);
+            console.log(auction.start_time);
             tempString = auction.end_date;
             var currEndDate = new Date(tempString.toString().substr(0, 10) + ' ' + auction.end_time);
             if (estimated_price - 10000 <= auction.estimated_price && estimated_price + 10000 >= auction.estimated_price && category == auction.category && city == auction.city && !(currAuctionStartDate >= freeEndDate || currEndDate <= startDate)) {

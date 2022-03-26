@@ -128,7 +128,7 @@ async function getWinnerName(req) {
 
 async function getBidDetails(req,res) {
 	try{
-		let getTopBids = `SELECT * FROM auction_bid_details WHERE auction_id='${req.params.id}'`;
+		let getTopBids = `SELECT * FROM auction_top_bids WHERE auction_id='${req.params.id}'`;
 		let topBidIds = (await db.query(getTopBids))[0];
 		if(!topBidIds){
 			return res.status(200).json({
@@ -237,27 +237,9 @@ async function updateLikes(auction_id) {
 	}
 }
 
-/* Get the list of auctions which comes under a particular category */
-async function categoryAuctionFilter(category) {
-	try {
-		console.log(await db.query(`SELECT * FROM product`));
-		let filterQuery = `SELECT *
-							FROM auction
-							INNER JOIN product
-							ON auction.product_id = product.product_id WHERE product.product_category = '${category}'`;
-		const rows = await db.query(filterQuery);
-		const displayFilteredAuctions = helper.emptyOrRows(rows);
-		return displayFilteredAuctions;
-	} catch (error) {
-		return {
-			success: 0,
-			error: `${error}`,
-		};
-	}
-}
-
 /* Get the list of auctions with given location */
 async function categoryAuctionFilter(category) {
+	console.log(category);
 	try {
 		let filterQuery = `SELECT *
 							FROM auction
@@ -279,8 +261,8 @@ async function locationAuctionFilter(location) {
 	try {
 		let filterQuery = `SELECT *
 							FROM auction
-							INNER JOIN user_address
-							ON auction.auctioneer_id = user_address.user_id WHERE user_address.city = '${location}'`;
+							INNER JOIN product
+							ON auction.product_id = product.product_id WHERE product.city = '${location}'`;
 		const rows = await db.query(filterQuery);
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
