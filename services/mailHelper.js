@@ -19,7 +19,6 @@ oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 const mailHelper = async (options) => {
   try {
     const accessToken = await oAuth2Client.getAccessToken();
-
     const transport = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -31,6 +30,8 @@ const mailHelper = async (options) => {
         accessToken: accessToken,
       },
     });
+    
+    console.log(options.email);
 
     const mailOptions = {
       from: 'noreply.nilami@gmail.com',

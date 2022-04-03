@@ -54,13 +54,17 @@ async function inviteSuggestions (req,res) {
             });
             queue.dequeue();
         }
-        const userMailQuery = `SELECT email FROM user_data WHERE user_id IN (${suggestedUsers})`;
-        const mailObjectArray = await db.query(userMailQuery);
         const suggestedMails = [];
-        mailObjectArray.forEach(mailObject => {
-            suggestedMails.push(mailObject.email);
-        });
-        console.log(suggestedMails);
+        if(suggestedUsers.length){
+            const userMailQuery = `SELECT email FROM user_data WHERE user_id IN (${suggestedUsers})`;
+            const mailObjectArray = await db.query(userMailQuery);
+            mailObjectArray.forEach(mailObject => {
+                suggestedMails.push(mailObject.email);
+            });
+            console.log(suggestedMails);
+        }else{
+            console.log("no suggestions");
+        }
         return {
 			suggestedMails
 		};

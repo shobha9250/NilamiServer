@@ -6,12 +6,13 @@ const {inviteSuggestions} = require("./inviteSuggestion");
 const date = require('date-and-time')
 
 
-const auctionRows = "(auction_id,product_id,auction_status,n_bidders,is_private,n_likes,auctioneer_id,start_date,end_date,start_time,end_time)"
+const auctionRows = "(auction_id,product_id,n_bidders,is_private,n_likes,auctioneer_id,start_date,end_date,start_time,end_time)"
 const productRows = "(product_id,product_name,product_details,product_category,product_pic,estimated_price,starting_price,city,pincode)"
 
 /* Add auction to the database */
 async function addAuction(req,res) {
 	var invitedBidders;
+	var n_suggestions= 0;
 	const productData = {
 		product_id: uuidv4(),
 		product_name: req.body.product_name,
@@ -28,9 +29,8 @@ async function addAuction(req,res) {
 		auction_id: uuidv4(),
 		inviteBidders: req.body.inviteBidders,
 		product_id: productData.product_id,
-		auction_status: '0',
 		n_bidders: '0',
-		is_private: req.body.is_private,
+		is_private: 1,
 		n_likes: '0',
 		auctioneer_id: req.user.user_id,
 		start_date: req.body.start_date,
@@ -39,34 +39,38 @@ async function addAuction(req,res) {
 		end_time: req.body.end_time
 	}
 
-	if(auctionData.inviteBidders == "on" && auctionData.is_private == "off"){
+	if(req.body.is_private == 'off')
+		auctionData.is_private = 0;
+
+	if(auctionData.inviteBidders == "on" && auctionData.is_private == 0){
 		invitedBidders = await inviteSuggestions(req,res);
 		if(invitedBidders.suggestedMails.length > 0){
-		// try {
-		// 	let data=	await mailHelper({
-		// 		email: invitedBidders.suggestedMails,
-		// 		subject: "Auction Invitation",
-		// 		text: "Auction Invitation",
-		// 		html: `<h4>Hola<br>An auction with category = ${productData.product_category} is going to be organized. 
-		// 				Check Out the details here: <a href="http://localhost:3001/feed/${auctionData.auction_id}">More info</a></h4>`
-		// 		});
-		// 		console.log("Invitation sent");
-		// 	} catch (error) {
-		// 		console.log(error);
-		// 	}
+		try {
+			let data=	await mailHelper({
+				email: invitedBidders.suggestedMails,
+				subject: "Auction Invitation",
+				text: "Auction Invitation",
+				html: `<h4>Hola<br>An auction with category = ${productData.product_category} is going to be organized. 
+						Check Out the details here: <a href="http://localhost:3001/feed/${auctionData.auction_id}">More info</a></h4>`
+				});
+				console.log("Invitation sent");
+				n_suggestions = invitedBidders.suggestedMails.length;
+			} catch (error) {
+				console.log(error);
+			}
 		}
 	}else{
 		console.log("Auction is private of user does not want suggestions");
 	}
 	
 	try {
-		// let productQuery = `INSERT INTO product` + productRows + ` values ('${productData.product_id}','${productData.product_name}','${productData.product_details}','${productData.product_category}', '${productData.product_pic}', '${productData.estimated_price}', '${productData.starting_price}','${productData.city}','${productData.pincode}')`;
-		// await db.query(productQuery);
-		// let insertQuery = `INSERT INTO auction` + auctionRows + `values ('${auctionData.auction_id}','${auctionData.product_id}', '${auctionData.auction_status}', '${auctionData.n_bidders}','${auctionData.is_private}','${auctionData.n_likes}','${auctionData.auctioneer_id}','${auctionData.start_date}', '${auctionData.end_date}','${auctionData.start_time}', '${auctionData.end_time}')`;
-		// await db.query(insertQuery);
+		let productQuery = `INSERT INTO product` + productRows + ` values ('${productData.product_id}','${productData.product_name}','${productData.product_details}','${productData.product_category}', '${productData.product_pic}', '${productData.estimated_price}', '${productData.starting_price}','${productData.city}','${productData.pincode}')`;
+		await db.query(productQuery);
+		let insertQuery = `INSERT INTO auction` + auctionRows + `values ('${auctionData.auction_id}','${auctionData.product_id}', '${auctionData.n_bidders}','${auctionData.is_private}','${auctionData.n_likes}','${auctionData.auctioneer_id}','${auctionData.start_date}', '${auctionData.end_date}','${auctionData.start_time}', '${auctionData.end_time}')`;
+		await db.query(insertQuery);
 		return res.status(200).json({
 			success: 1,
-			n_suggestions: `${invitedBidders.suggestedMails.length}`,
+			n_suggestions: `${n_suggestions}`,
 			message: 'successfully created auction',
 		});
 	} catch (error) {

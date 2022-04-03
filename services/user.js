@@ -23,6 +23,7 @@ async function signUp(req, res) {
 		city: req.body.address,
 		pincode: req.body.pincode,
 		mobile: req.body.mobile,
+		profile_pic: req.body.profile_url,
 		user_id: uuidv4(),
 		username: req.body.email.substring(0, req.body.email.lastIndexOf('@')),
 	};
@@ -42,8 +43,8 @@ async function signUp(req, res) {
 				email: inputData.email,
 			};
 			let insertQuery = `INSERT INTO 
-								user_data(user_id,user_name, email, password, name, primary_mobile) 
-								VALUES ('${inputData.user_id}','${inputData.username}', '${inputData.email}', '${inputData.password}', '${inputData.name}', '${inputData.primary_number}')`;
+								user_data(user_id,user_name, email, password, name, primary_mobile, profile_pic) 
+								VALUES ('${inputData.user_id}','${inputData.username}', '${inputData.email}', '${inputData.password}', '${inputData.name}', '${inputData.primary_number}', '${inputData.profile_pic}')`;
 			let addressQuery = `INSERT INTO 
 								user_address(address_id,user_id,address,city,pincode,mobile) 
 								VALUES('${inputData.address_id}','${inputData.user_id}','${inputData.address}','${inputData.city}','${inputData.pincode}','${inputData.mobile}')`;
@@ -57,7 +58,7 @@ async function signUp(req, res) {
 				success: 1,
 				message: 'successfully signed up',
 				user_id: `${inputData.user_id}`,
-				user_name: `${inputData.user_id}`
+				user_name: `${inputData.username}`
 			});
 			
 		} 
@@ -260,7 +261,9 @@ async function getMyAuctions(req,res) {
 async function registerForAuction(req,res) {
 	const auction_id = req.body.auction_id;
 	const user_id = req.user.user_id;
-	const anonymous = req.body.anonymous;
+	var anonymous = 1;
+	if(req.body.anonymous == 'off')
+		anonymous = 0;
 
 	let insertQuery = `INSERT INTO user_auction_reg(user_id, auction_id,anonymous) values ('${user_id}','${auction_id}','${anonymous}')`;
 	try {
@@ -347,20 +350,23 @@ async function bid(req,res) {
 		// 	});
 		//   }
 		
-		// const getStartingPrice = `SELECT starting_price FROM product 
-		// 						WHERE product_id = (SELECT product_id FROM auction
-		// 						 WHERE auction_id='${inputBidDetails.auction_id}')`;
-		// const startingPrice = (await db.query(getStartingPrice))[0].startingPrice;
-		// if(startingPrice > inputBidDetails.bid_amount){
-		// 	console.log("sfsf");
-		// 	console.log(startingPrice);
-		// 	console.log(inputBidDetails.bid_amount < startingPrice);
-		// 	return res.json({
-		// 		success: 0,
-		// 		message : "your bid is less than than the starting bid"
-		// 	});
-		// }
-		
+		const getStartingPrice = `SELECT starting_price FROM product 
+								WHERE product_id = (SELECT product_id FROM auction
+								 WHERE auction_id='${inputBidDetails.auction_id}')`;
+		const startingPrice = (await db.query(getStartingPrice))[0].startingPrice;
+		if(startingPrice > inputBidDetails.bid_amount){
+			console.log("sfsf");
+			console.log(startingPrice);
+			console.log(inputBidDetails.bid_amount < startingPrice);
+			return res.json({
+				success: 0,
+				message : "your bid is less than than the starting bid"
+			});
+		}
+		let insertBidQuery = `INSERT INTO auction_bids 
+							VALUES('${inputBidDetails.bid_id}','${inputBidDetails.auction_id}','${inputBidDetails.bid_amount}','${inputBidDetails.user_id}')`;
+		await db.query(insertBidQuery);
+
 		let getTopBids = `SELECT * FROM auction_top_bids WHERE auction_id='${inputBidDetails.auction_id}'`;
 		let topBidIds = (await db.query(getTopBids))[0];
 		if(!topBidIds){
@@ -393,9 +399,6 @@ async function bid(req,res) {
 				});
 			}
 		}
-		let insertBidQuery = `INSERT INTO auction_bids 
-							VALUES('${inputBidDetails.bid_id}','${inputBidDetails.auction_id}','${inputBidDetails.bid_amount}','${inputBidDetails.user_id}')`;
-		await db.query(insertBidQuery);
 		return res.status(200).json({
 			success: 1,
 			message : "successful bid"
