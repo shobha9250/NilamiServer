@@ -15,7 +15,7 @@ const {
 	categoryAuctionFilter, 
 	locationAuctionFilter, 
 	sortedAuctionFilter,
-	getWinnerName } = require("../services/auction");
+	getWinnerName, } = require("../services/auction");
 const router = require("express").Router();
 const {startTimeSuggestion} = require("../services/startTimeSuggestion");
 

@@ -134,18 +134,20 @@ async function getWinnerName(req) {
 							winner_user_id FROM auction 
 							WHERE auction_id = '${auction_id}'`))[0].winner_user_id;
 		
-		const query = `SELECT anonymous FROM user_auction_reg WHERE user_id = '${winnerUserId}'`;
+		const query = `SELECT anonymous FROM user_auction_reg 
+					   WHERE user_id = '${winnerUserId}' and auction_id = '${auction_id}'`;
 		const isAnonymous = (await db.query(query))[0].anonymous;
 		
-		if(isAnonymous == "off"){
+		if(isAnonymous == 0){
 			const userNameQuery = `SELECT user_name FROM user_data WHERE user_id = '${winnerUserId}'`;
 			const userName = await db.query(userNameQuery);
-			winnerName = userName;
+			winnerName = userName[0].user_name;
 		}else{
 			winnerName = "Anonymous";
 		}
 		return winnerName;
 	} catch (error) {
+		console.log(error);
 		return {
 			success: 0,
 			error: `${error}`,
@@ -294,7 +296,7 @@ async function categoryAuctionFilter(category) {
 							FROM auction
 							INNER JOIN product
 							ON auction.product_id = product.product_id 
-							WHERE product.product_category = '${category}'`;
+							WHERE product.product_category = '${category}' and is_private=0`;
 		const rows = await db.query(filterQuery);
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
@@ -313,7 +315,7 @@ async function locationAuctionFilter(location) {
 							FROM auction
 							INNER JOIN product
 							ON auction.product_id = product.product_id 
-							WHERE product.city = '${location}'`;
+							WHERE product.city = '${location}' and is_private=0`;
 		const rows = await db.query(filterQuery);
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
