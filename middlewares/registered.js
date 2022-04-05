@@ -1,5 +1,6 @@
 const db = require('../services/db');
 
+/* Checks if the current user is registered for the current auction */
 exports.verifyRegistration = async(req,res,next) => {
 	const user_id = req.user.user_id;
 	const auction_id = req.params.id;

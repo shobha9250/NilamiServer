@@ -4,7 +4,6 @@ const cors = require('cors');
 const cookies = require('cookie-parser');
 const app = express();
 const port = process.env.PORT;
-console.log(port);
 
 app.use(express.json());
 app.use(
@@ -26,10 +25,9 @@ app.use('/auction', auctionRoutes);
 
 app.get('/', (req, res) => {
 	token = req.cookies['token'];
-	console.log(req.user);
 	res.json({ message: 'ok' });
 });
 
 app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`);
+	console.log(` listening at http://localhost:${port}`);
 });

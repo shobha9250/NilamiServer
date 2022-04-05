@@ -1,18 +1,20 @@
+/* This file contains the fuctions that were called in the auction routes file.*/
+
 const db = require('./db');
 const helper = require('../helper');
 const { v4: uuidv4 } = require('uuid');
 const mailHelper = require("./mailHelper");
-const {inviteSuggestions} = require("./inviteSuggestion");
+const {inviteBidders} = require("./inviteBidders");
 const date = require('date-and-time')
 
 
 const auctionRows = "(auction_id,product_id,n_bidders,is_private,n_likes,auctioneer_id,start_date,end_date,start_time,end_time)"
 const productRows = "(product_id,product_name,product_details,product_category,product_pic,estimated_price,starting_price,city,pincode)"
 
-/* Add auction to the database */
+/* Add auction to the database, it is called when user creates a new auction*/
 async function addAuction(req,res) {
 	var invitedBidders;
-	var n_suggestions= 0;
+	var n_invitedBidders= 0;
 	const productData = {
 		product_id: uuidv4(),
 		product_name: req.body.product_name,
@@ -43,18 +45,19 @@ async function addAuction(req,res) {
 		auctionData.is_private = 0;
 
 	if(auctionData.inviteBidders == "on" && auctionData.is_private == 0){
-		invitedBidders = await inviteSuggestions(req,res);
+		invitedBidders = await inviteBidders(req,res);
 		if(invitedBidders.suggestedMails.length > 0){
 		try {
 			let data=	await mailHelper({
 				email: invitedBidders.suggestedMails,
 				subject: "Auction Invitation",
 				text: "Auction Invitation",
-				html: `<h4>Hola<br>An auction with category = ${productData.product_category} is going to be organized. 
-						Check Out the details here: <a href="http://localhost:3001/feed/${auctionData.auction_id}">More info</a></h4>`
+				html: `<h4>Hola<br>
+						An auction with category = ${productData.product_category} is going to be organized. 
+						Check Out the details here: 
+						<a href="http://localhost:3001/feed/${auctionData.auction_id}">More info</a></h4>`
 				});
-				console.log("Invitation sent");
-				n_suggestions = invitedBidders.suggestedMails.length;
+				n_invitedBidders = invitedBidders.suggestedMails.length;
 			} catch (error) {
 				console.log(error);
 			}
@@ -64,13 +67,36 @@ async function addAuction(req,res) {
 	}
 	
 	try {
-		let productQuery = `INSERT INTO product` + productRows + ` values ('${productData.product_id}','${productData.product_name}','${productData.product_details}','${productData.product_category}', '${productData.product_pic}', '${productData.estimated_price}', '${productData.starting_price}','${productData.city}','${productData.pincode}')`;
+		let productQuery = `INSERT INTO 
+							product` + productRows + 
+							`values 
+							('${productData.product_id}',
+							'${productData.product_name}',
+							'${productData.product_details}',
+							'${productData.product_category}', 
+							'${productData.product_pic}', 
+							'${productData.estimated_price}', 
+							'${productData.starting_price}',
+							'${productData.city}',
+							'${productData.pincode}')`;
 		await db.query(productQuery);
-		let insertQuery = `INSERT INTO auction` + auctionRows + `values ('${auctionData.auction_id}','${auctionData.product_id}', '${auctionData.n_bidders}','${auctionData.is_private}','${auctionData.n_likes}','${auctionData.auctioneer_id}','${auctionData.start_date}', '${auctionData.end_date}','${auctionData.start_time}', '${auctionData.end_time}')`;
+		let insertQuery = `INSERT INTO 
+							auction` + auctionRows + 
+							`values 
+							('${auctionData.auction_id}',
+							'${auctionData.product_id}', 
+							'${auctionData.n_bidders}',
+							'${auctionData.is_private}',
+							'${auctionData.n_likes}',
+							'${auctionData.auctioneer_id}',
+							'${auctionData.start_date}', 
+							'${auctionData.end_date}',
+							'${auctionData.start_time}', 
+							'${auctionData.end_time}')`;
 		await db.query(insertQuery);
 		return res.status(200).json({
 			success: 1,
-			n_suggestions: `${n_suggestions}`,
+			n_invitedBidders: `${n_invitedBidders}`,
 			message: 'successfully created auction',
 		});
 	} catch (error) {
@@ -90,8 +116,6 @@ async function displayFeed() {
 						ORDER BY n_likes DESC,n_bidders DESC`;
 		const rows = await db.query(feedQuery);
 		const displayFeed = helper.emptyOrRows(rows);
-		console.log(rows);
-
 		return displayFeed;
 	} catch (error) {
 		return {
@@ -101,20 +125,21 @@ async function displayFeed() {
 	}
 }
 
+/* returns the winner of a particular auction */
 async function getWinnerName(req) {
 	const auction_id = req.params.id;
-	console.log(auction_id);
 	try {
 		var winnerName;
-		const winnerUserId = (await db.query(`SELECT winner_user_id FROM auction WHERE auction_id = '${auction_id}'`))[0].winner_user_id;
-		console.log(winnerUserId);
+		const winnerUserId = (await db.query(`SELECT 
+							winner_user_id FROM auction 
+							WHERE auction_id = '${auction_id}'`))[0].winner_user_id;
+		
 		const query = `SELECT anonymous FROM user_auction_reg WHERE user_id = '${winnerUserId}'`;
 		const isAnonymous = (await db.query(query))[0].anonymous;
-		console.log(isAnonymous);
+		
 		if(isAnonymous == "off"){
 			const userNameQuery = `SELECT user_name FROM user_data WHERE user_id = '${winnerUserId}'`;
 			const userName = await db.query(userNameQuery);
-			console.log(userName);
 			winnerName = userName;
 		}else{
 			winnerName = "Anonymous";
@@ -128,9 +153,8 @@ async function getWinnerName(req) {
 	}
 }
 
-
-
-async function getBidDetails(req,res) {
+/* this function returns the top 3 bids of an auction */
+async function getTopBidDetails(req,res) {
 	try{
 		let getTopBids = `SELECT * FROM auction_top_bids WHERE auction_id='${req.params.id}'`;
 		let topBidIds = (await db.query(getTopBids))[0];
@@ -140,9 +164,15 @@ async function getBidDetails(req,res) {
 				bidDetails: [{bid_amount:0}]
 			});
 		}
-		let topBidDetailsQuery = `SELECT bid_amount FROM auction_bids WHERE bid_id IN ('${topBidIds.highest_bid_id}','${topBidIds.second_highest_bid_id}','${topBidIds.third_highest_bid_id}') ORDER BY bid_amount DESC`
+		let topBidDetailsQuery = `SELECT bid_amount 
+								FROM auction_bids 
+								WHERE bid_id 
+								IN 
+								('${topBidIds.highest_bid_id}',
+								'${topBidIds.second_highest_bid_id}',
+								'${topBidIds.third_highest_bid_id}') 
+								ORDER BY bid_amount DESC`
 		let topBidDetails = await db.query(topBidDetailsQuery);
-		// console.log(topBidDetails);
 		return res.status(200).json({
 			success: 1,
 			bidDetails: topBidDetails
@@ -182,11 +212,24 @@ async function modifyAuction(req) {
 			`SELECT product_id FROM auction WHERE auction_id='${auction_id}'`
 		))[0].product_id;
 		let updateProductQuery = `UPDATE product
-								SET product_name='${req.body.product_name}', product_details='${req.body.product_details}', product_category='${req.body.product_category}', product_pic='${req.body.product_pic}', estimated_price='${req.body.estimated_price}', starting_price='${req.body.starting_price}', city='${req.body.city}', pincode='${req.body.pincode}'
+								SET 
+								product_name='${req.body.product_name}', 
+								product_details='${req.body.product_details}', 
+								product_category='${req.body.product_category}', 
+								product_pic='${req.body.product_pic}', 
+								estimated_price='${req.body.estimated_price}', 
+								starting_price='${req.body.starting_price}', 
+								city='${req.body.city}', 
+								pincode='${req.body.pincode}'
 								WHERE product_id= '${product_id}'`;
 		await db.query(updateProductQuery);
 		let updateQuery = `UPDATE auction 
-						SET is_private='${req.body.is_private}',start_date='${req.body.start_date}',end_date='${req.body.end_date}',start_time='${req.body.start_time}',end_time='${req.body.end_time}'
+						SET 
+						is_private='${req.body.is_private}',
+						start_date='${req.body.start_date}',
+						end_date='${req.body.end_date}',
+						start_time='${req.body.start_time}',
+						end_time='${req.body.end_time}'
 						WHERE auction_id='${auction_id}'`;
 		await db.query(updateQuery);
 		return {
@@ -201,6 +244,8 @@ async function modifyAuction(req) {
 	}
 }
 
+/* this functions update the end time of the auction, 
+it makes it equal to the current time*/ 
 async function closeAuction(req,res){
 	const auction_id= req.params.id;
 	try {
@@ -225,9 +270,10 @@ async function closeAuction(req,res){
 
 /* Add a like to the auction given auction_id */
 async function updateLikes(auction_id) {
-	
 	try {
-		let updateQuery = `UPDATE auction SET n_likes= n_likes + 1 WHERE auction_id='${auction_id}'`;
+		let updateQuery = `UPDATE auction 
+							SET n_likes= n_likes + 1 
+							WHERE auction_id='${auction_id}'`;
 		await db.query(updateQuery);
 		return {
 			success: 1,
@@ -243,12 +289,12 @@ async function updateLikes(auction_id) {
 
 /* Get the list of auctions with given location */
 async function categoryAuctionFilter(category) {
-	console.log(category);
 	try {
 		let filterQuery = `SELECT *
 							FROM auction
 							INNER JOIN product
-							ON auction.product_id = product.product_id WHERE product.product_category = '${category}'`;
+							ON auction.product_id = product.product_id 
+							WHERE product.product_category = '${category}'`;
 		const rows = await db.query(filterQuery);
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
@@ -266,7 +312,8 @@ async function locationAuctionFilter(location) {
 		let filterQuery = `SELECT *
 							FROM auction
 							INNER JOIN product
-							ON auction.product_id = product.product_id WHERE product.city = '${location}'`;
+							ON auction.product_id = product.product_id 
+							WHERE product.city = '${location}'`;
 		const rows = await db.query(filterQuery);
 		const displayFilteredAuctions = helper.emptyOrRows(rows);
 		return displayFilteredAuctions;
@@ -281,11 +328,11 @@ async function locationAuctionFilter(location) {
 /* Get the list of auctions with given location */
 async function sortedAuctionFilter() {
 	try {
-		console.log(await db.query(`SELECT * FROM product`));
 		let filterQuery = `SELECT *
 							FROM auction
 							INNER JOIN product
-							ON auction.product_id = product.product_id ORDER BY product.estimated_price`;
+							ON auction.product_id = product.product_id 
+							ORDER BY product.estimated_price`;
 		const rows = await db.query(filterQuery);
 		const displaySortedAuctions = helper.emptyOrRows(rows);
 		return displaySortedAuctions;
@@ -306,7 +353,7 @@ module.exports = {
 	categoryAuctionFilter,
 	locationAuctionFilter,
 	sortedAuctionFilter,
-	getBidDetails,
+	getTopBidDetails,
 	getWinnerName,
 	closeAuction
 };

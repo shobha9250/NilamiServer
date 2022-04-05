@@ -1,8 +1,7 @@
-/* include unsubscribe option*/
-/* make efficient query*/
+/*The algorithm uses BFS to get the list of bidders to be invited*/
+
 const db = require('./db');
 
-/*change this implementation queue*/
 class Queue{
     constructor() {
         this.items = [];
@@ -25,7 +24,7 @@ class Queue{
     }
 }
 
-async function inviteSuggestions (req,res) {
+async function inviteBidders (req,res) {
     try {
         const client_user_id = req.user.user_id;
         const category = req.body.product_category;
@@ -61,7 +60,6 @@ async function inviteSuggestions (req,res) {
             mailObjectArray.forEach(mailObject => {
                 suggestedMails.push(mailObject.email);
             });
-            console.log(suggestedMails);
         }else{
             console.log("no suggestions");
         }
@@ -75,5 +73,5 @@ async function inviteSuggestions (req,res) {
 }
 
 module.exports = {
-    inviteSuggestions
+    inviteBidders
 }

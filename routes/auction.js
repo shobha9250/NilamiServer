@@ -1,7 +1,22 @@
+/* 
+This file contains all the routes related to auction. 
+The functions are called and error handling is done using try-catch blocks.
+*/
+
 const { verifyToken, verifyAuctioneer } = require("../middlewares/auth");
-const { addAuction, displayFeed, getBidDetails, displayAuction, modifyAuction,closeAuction, updateLikes, categoryAuctionFilter, locationAuctionFilter, sortedAuctionFilter,getWinnerName } = require("../services/auction");
+const { 
+	addAuction, 
+	displayFeed, 
+	getTopBidDetails, 
+	displayAuction, 
+	modifyAuction,
+	closeAuction, 
+	updateLikes, 
+	categoryAuctionFilter, 
+	locationAuctionFilter, 
+	sortedAuctionFilter,
+	getWinnerName } = require("../services/auction");
 const router = require("express").Router();
-const { inviteSuggestions } = require("../services/inviteSuggestion");
 const {startTimeSuggestion} = require("../services/startTimeSuggestion");
 
 
@@ -11,10 +26,8 @@ const {startTimeSuggestion} = require("../services/startTimeSuggestion");
 //@access    PRIVATE
 
 router.post('/new',verifyToken, async function (req, res, next) {
-	console.log('Adding new auction details');
 	try {
 		await addAuction(req,res);
-        // inviteSuggestions(req,res);
 	} catch (err) {
 		console.error(`Error while adding auction : `, err.message);
 		next(err);
@@ -27,7 +40,6 @@ router.post('/new',verifyToken, async function (req, res, next) {
 //@access    PUBLIC
 
 router.get('/feed', async function (req, res, next) {
-	console.log('Generating auction feed.');
 	try {
 		res.json(await displayFeed());
 	} catch (err) {
@@ -42,12 +54,10 @@ router.get('/feed', async function (req, res, next) {
 //@access    PRIVATE
 
 router.post('/timeSuggestion', async function (req, res, next) {
-    console.log('Suggestion start time and date');
-	console.log(req.body);
 	try {
         res.json(await startTimeSuggestion(req, res, next));
     } catch (err) {
-	console.error(`Error while suggesting start time, date: `, err.message);
+		console.error(`Error while suggesting start time, date: `, err.message);
 		next(err);
 	}
 });
@@ -58,7 +68,6 @@ router.post('/timeSuggestion', async function (req, res, next) {
 //@access    PUBLIC
 
 router.get('/id/:id', async function (req, res, next) {
-	console.log('Details for auction with id ' + req.params.id);
 	try {
 		res.json(await displayAuction(req.params.id));
 	} catch (err) {
@@ -73,7 +82,6 @@ router.get('/id/:id', async function (req, res, next) {
 //@access    PUBLIC
 
 router.get('/getWinnerName/id/:id', async function (req, res, next) {
-	console.log('Details of winner for auction with id ' + req.params.id);
 	try {
 		res.json(await getWinnerName(req));
 	} catch (err) {
@@ -84,13 +92,12 @@ router.get('/getWinnerName/id/:id', async function (req, res, next) {
 
 //@type      GET
 //@route     /auction/bidDetails/id/:id
-//@desc      route for getting bidding details of a particular auction
+//@desc      route for getting top bid details of a particular auction
 //@access    PRIVATE
 
 router.get('/bidDetails/id/:id', async function (req, res, next) {
-	console.log('Bid Details for auction with id ' + req.params.id);
 	try {
-		await getBidDetails(req,res);
+		await getTopBidDetails(req,res);
 	} catch (err) {
 		console.error(`Error while displaying auction : `, err.message);
 		next(err);
@@ -102,8 +109,7 @@ router.get('/bidDetails/id/:id', async function (req, res, next) {
 //@desc      route for editing an auction
 //@access    PRIVATE
 
-router.put('/edit/:id',verifyToken,verifyAuctioneer, async function (req, res, next) {
-	console.log('Modify details for auction with id ' + req.params.id);
+router.put('/edit/:id',verifyToken, verifyAuctioneer, async function (req, res, next) {
 	try {
 		res.json(await modifyAuction(req));
 	} catch (err) {
@@ -117,8 +123,7 @@ router.put('/edit/:id',verifyToken,verifyAuctioneer, async function (req, res, n
 //@desc      route for closing an auction
 //@access    PRIVATE
 
-router.put('/close/:id',verifyToken, async function (req, res, next) {
-	console.log('Close auction with id ' + req.params.id);
+router.put('/close/:id',verifyToken, verifyAuctioneer, async function (req, res, next) {
 	try {
 		res.json(await closeAuction(req));
 	} catch (err) {
@@ -130,11 +135,9 @@ router.put('/close/:id',verifyToken, async function (req, res, next) {
 //@type      PUT
 //@route     /auction/add_like/:id
 //@desc      route for adding a like to a auction post
-//@access    PRIVATE
+//@access    PUBLIC
 
-router.put('/add_like/:id',verifyToken, async function (req, res, next) {
-    // console.log("sfs");
-    // console.log('Add a like for auction with id ' + req.params.id)
+router.put('/add_like/:id', async function (req, res, next) {
     try {
         res.json(await updateLikes(req.params.id));
     } catch (err) {
@@ -149,7 +152,6 @@ router.put('/add_like/:id',verifyToken, async function (req, res, next) {
 //@access    PUBLIC
 
 router.get('/category_filter/:category', async function (req, res, next) {
-    console.log('Details for auction with category ' + req.params.category)
     try {
         res.json(await categoryAuctionFilter(req.params.category));
     } catch (err) {
@@ -164,7 +166,6 @@ router.get('/category_filter/:category', async function (req, res, next) {
 //@access    PUBLIC
 
 router.get('/location_filter/:location', async function (req, res, next) {
-    console.log('Details for auction with location ' + req.params.location)
     try {
         res.json(await locationAuctionFilter(req.params.location));
     } catch (err) {
@@ -179,7 +180,6 @@ router.get('/location_filter/:location', async function (req, res, next) {
 //@access    PUBLIC
 
 router.get('/sort_auctions', async function (req, res, next) {
-    console.log('Details for auction with sorted')
     try {
         res.json(await sortedAuctionFilter());
     } catch (err) {

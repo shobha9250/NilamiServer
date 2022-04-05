@@ -1,9 +1,10 @@
+/* This file includes creating the transport for sending mails using nodemailer.
+OAuth2 client is created and Gmail service is used */
 
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 require('dotenv').config();
 
-// These id's and secrets should come from .env file.
 const CLIENT_ID = process.env.MAIL_CLIENT_ID;
 const CLEINT_SECRET = process.env.MAIL_SECRET;
 const REDIRECT_URI = process.env.MAIL_REDIRECT_URI;
@@ -31,8 +32,6 @@ const mailHelper = async (options) => {
       },
     });
     
-    console.log(options.email);
-
     const mailOptions = {
       from: 'noreply.nilami@gmail.com',
       to: options.email,
@@ -44,7 +43,6 @@ const mailHelper = async (options) => {
     return new Promise(async(resolve, reject) => {
             try {
               let info = await transport.sendMail(mailOptions);
-              console.log(info);
               resolve(info.messageId);
             } catch (error) {
               console.log(error);

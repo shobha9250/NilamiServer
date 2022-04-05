@@ -1,3 +1,7 @@
+/* 
+This file contains all the routes related to user. 
+The functions are called and error handling is done using try-catch blocks.
+*/
 const {
 	signUp,
 	login,
@@ -10,15 +14,10 @@ const {
 	getRegisteredAuctions,
 	bid,
 	getMyAuctions,
-	allUsers
 } = require('../services/user');
 const router = require('express').Router();
 const { verifyToken } = require('../middlewares/auth');
 const { verifyRegistration } = require("../middlewares/registered");
-
-const jwt = require('jsonwebtoken');
-const config = require('../config');
-
 
 //@type      POST
 //@route     /user/signup
@@ -26,11 +25,8 @@ const config = require('../config');
 //@access    PUBLIC
 
 router.post('/signup', async function (req, res, next) {
-	console.log('Sign up');
 	try {
 		await signUp(req, res);
-		// const decoded = jwt.verify(req.cookies['token'], config.jwt.secret);
-		// console.log(decoded);
 	} catch (err) {
 		console.error(`Error while signing up : `, err.message);
 		next(err);
@@ -43,21 +39,10 @@ router.post('/signup', async function (req, res, next) {
 //@access    PUBLIC
 
 router.post('/login', async function (req, res, next) {
-	console.log('Login');
 	try {
 		await login(req, res);
 	} catch (err) {
 		console.error(`Error while signing up : `, err.message);
-		next(err);
-	}
-});
-
-router.get('/allUsers', async function (req, res, next) {
-	console.log('allUsers');
-	try {
-		await allUsers(req, res);
-	} catch (err) {
-		console.error(`Error while displaying all users : `, err.message);
 		next(err);
 	}
 });
@@ -68,7 +53,6 @@ router.get('/allUsers', async function (req, res, next) {
 //@access    PRIVATE
 
 router.get('/profile', verifyToken, async function (req, res, next) {
-	console.log('User details with username ' + req.user.username);
 	try {
 		await getUserDetails(req,res);
 	} catch (err) {
@@ -111,7 +95,6 @@ router.get('/myAuctions', verifyToken, async function (req, res, next) {
 //@access    PRIVATE
 
 router.put('/updateInfo',verifyToken,async function (req, res, next) {
-	console.log('Modify details for user ' + req.user.username);
 	try {
 		await updateUserInfo(req,res);
 	} catch (err) {
@@ -126,7 +109,6 @@ router.put('/updateInfo',verifyToken,async function (req, res, next) {
 //@access    PRIVATE
 
 router.post('/addAddress',verifyToken,async function (req, res, next) {
-	console.log('Modify details for user ' + req.user.username);
 	try {
 		await addUserAddress(req,res);
 	} catch (err) {
@@ -141,7 +123,6 @@ router.post('/addAddress',verifyToken,async function (req, res, next) {
 //@access    PRIVATE
 
 router.post('/deleteAddress',verifyToken,async function (req, res, next) {
-	console.log('Modify details for user ' + req.user.username);
 	try {
 		await deleteUserAddress(req,res);
 	} catch (err) {
@@ -156,7 +137,6 @@ router.post('/deleteAddress',verifyToken,async function (req, res, next) {
 //@access    PRIVATE
 
 router.post('/register/auction', verifyToken, async function (req, res, next) {
-		console.log('Register for auction ' + req.body.auction_id);
 		try {
 			await registerForAuction(req,res);
 		} catch (err) {
@@ -172,7 +152,6 @@ router.post('/register/auction', verifyToken, async function (req, res, next) {
 //@access    PRIVATE
 
 router.post('/unregister/auction', verifyToken, async function (req, res, next) {
-		console.log('Unregister for auction ' + req.body.auction_id);
 		try {
 			await unregisterForAuction(req,res);
 		} catch (err) {
@@ -187,10 +166,7 @@ router.post('/unregister/auction', verifyToken, async function (req, res, next) 
 //@desc      route for bidding
 //@access    PRIVATE
 
-//add the middleware also
-
-router.post('/bid/auction/:auction_id', verifyToken, async function (req, res, next) {
-	console.log('Bid for auction ' + req.params.auction_id);
+router.post('/bid/auction/:auction_id', verifyToken, verifyRegistration, async function (req, res, next) {
 	try {
 		await bid(req,res);
 	} catch (err) {
