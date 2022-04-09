@@ -133,10 +133,12 @@ async function getWinnerName(req) {
 		const winnerUserId = (await db.query(`SELECT 
 							winner_user_id FROM auction 
 							WHERE auction_id = '${auction_id}'`))[0].winner_user_id;
-		
-		const query = `SELECT anonymous FROM user_auction_reg 
-					   WHERE user_id = '${winnerUserId}' and auction_id = '${auction_id}'`;
-		const isAnonymous = (await db.query(query))[0].anonymous;
+		var isAnonymous = 1;
+		if(winnerUserId){
+			const query = `SELECT anonymous FROM user_auction_reg 
+					   		WHERE user_id = '${winnerUserId}' and auction_id = '${auction_id}'`;
+			isAnonymous = (await db.query(query))[0].anonymous;
+		}
 		
 		if(isAnonymous == 0){
 			const userNameQuery = `SELECT user_name FROM user_data WHERE user_id = '${winnerUserId}'`;

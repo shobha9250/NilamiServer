@@ -376,7 +376,7 @@ async function bid(req,res) {
 		const getStartingPrice = `SELECT starting_price FROM product 
 								WHERE product_id = (SELECT product_id FROM auction
 								 WHERE auction_id='${inputBidDetails.auction_id}')`;
-		const startingPrice = (await db.query(getStartingPrice))[0].startingPrice;
+		const startingPrice = (await db.query(getStartingPrice))[0].starting_price;
 		if(startingPrice > inputBidDetails.bid_amount){
 			return res.json({
 				success: 0,
@@ -395,7 +395,8 @@ async function bid(req,res) {
 								VALUES('${inputBidDetails.auction_id}','${inputBidDetails.bid_id}',
 								'${inputBidDetails.bid_id}','${inputBidDetails.bid_id}')`;
 			await db.query(insertBidQuery);
-			const updateWinnerQuery =`UPDATE auction SET winner_user_id='${req.user.user_id}'`;
+			const updateWinnerQuery =`UPDATE auction SET winner_user_id='${req.user.user_id}' 
+										WHERE auction_id='${inputBidDetails.auction_id}'`;
 			await db.query(updateWinnerQuery);
 		}else{
 			let topBidDetailsQuery = `SELECT bid_amount 

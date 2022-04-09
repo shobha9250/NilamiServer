@@ -1,4 +1,4 @@
-/*The algorithm for inviting bidders. 
+/*The algorithm is for inviting bidders. 
 It uses BFS to get the list of bidders to be invited*/
 
 const db = require('./db');
